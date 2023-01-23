@@ -9,9 +9,9 @@ clean_taxa(pobject, tax_remove = "Phylum", verbose = TRUE)
 \arguments{
 \item{pobject}{A \code{phyloseq} object to filter}
 
-\item{tax_remove}{The required level of classification. Any taxa not classified at least to this level will be removed [DEFAULTS = "Phylum"]}
+\item{tax_remove}{The required level of classification. Any taxa not classified at least to this level will be removed Default "Phylum"}
 
-\item{verbose}{Logical, indicating if summary of removed taxa should be reported. [DEFAULT = TRUE]}
+\item{verbose}{Logical, indicating if summary of removed taxa should be reported. Default TRUE}
 }
 \value{
 The provided \code{phyloseq} object with an updated tax_table() and poorly classified taxa removed

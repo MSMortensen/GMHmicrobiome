@@ -9,11 +9,9 @@ filter_rank(pobject, group = NA, min.rank = 10, includes = "any")
 \arguments{
 \item{pobject}{Phyloseq object to filter}
 
-\item{group}{Sample data variable to filter by [DEFAULT = NA]}
+\item{group}{Sample data variable to filter by Default NA}
 
-\item{min.rank}{cut-off ratio (taxa with mean abundance below this ratio (0.1 = 10%) will be group in "Others") [DEFAULT = 10]}
-
-\item{includes}{If using groups, should taxa be included if they are above the min.rank in any or all groups [DEFAULT = "any"]}
+\item{min.rank}{cut-off ratio (taxa with mean abundance below this ratio (0.1 = 10 \%) will be group in "Others") Default 10}
 }
 \value{
 A filtered phyloseq object

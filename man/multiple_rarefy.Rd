@@ -17,21 +17,21 @@ multiple_rarefy(
 \arguments{
 \item{pobject}{A \code{phyloseq} object.}
 
-\item{ntables}{Number or rarefactions to perform. [DEFAULT = 100]}
+\item{ntables}{Number or rarefactions to perform. Default 100}
 
-\item{depth}{Rarefaction depth at which the alpha diversity is calculated. [DEFAULT = 90 % of the lowest sample depth]}
+\item{depth}{Rarefaction depth at which the alpha diversity is calculated. Default 90 \% of the lowest sample depth}
 
-\item{distmethod}{Distance/dissimilarity metric used to asses iteration similarity. Must be one of: "manhattan", "euclidean", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup", "binomial", "chao", "cao", "mahalanobis", "chisq", "chord", "hellinger", "aitchison", or "robust.aitchison". [DEFAULT = "bray"]}
+\item{distmethod}{Distance/dissimilarity metric used to asses iteration similarity. Must be one of: "manhattan", "euclidean", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup", "binomial", "chao", "cao", "mahalanobis", "chisq", "chord", "hellinger", "aitchison", or "robust.aitchison". Default "bray"}
 
-\item{summarymeasure}{Function to compare iterations. [DEFAULT = mean]}
+\item{summarymeasure}{Function to compare iterations. Default mean}
 
-\item{seedstart}{Random seed to use. [DEFAULT = 500]}
+\item{seedstart}{Random seed to use. Default 500}
 
-\item{verbose}{Logical, indicating if the current sample being rarefied should be reported during calculation. [DEFAULT = TRUE]}
+\item{verbose}{Logical, indicating if the current sample being rarefied should be reported during calculation. Default TRUE}
 }
 \value{
 A rarefied \code{phyloseq} object with rarefied samples
 }
 \description{
-Create multiple rarefications of each sample and select most representative iteration
+Create multiple rarefications of each sample and select most representative iteration.
 }

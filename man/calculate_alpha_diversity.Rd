@@ -16,15 +16,15 @@ calculate_alpha_diversity(
 \arguments{
 \item{pobject}{A \code{phyloseq} object.}
 
-\item{ntables}{Number or rarefactions to perform. [DEFAULT = 100]}
+\item{ntables}{Number or rarefactions to perform. Default 100}
 
-\item{depth}{Rarefaction depth at which the alpha diversity is calculated. [DEFAULT = 90 % of the lowest sample depth]}
+\item{depth}{Rarefaction depth at which the alpha diversity is calculated. Default 90 \% of the lowest sample depth}
 
-\item{methods}{Which alpha diversity metrics to calculate. [DEFAULT = c("Observed","Chao1","FaithPD","Shannon")]}
+\item{methods}{Which alpha diversity metrics to calculate. Default c("Observed","Chao1","FaithPD","Shannon")}
 
-\item{seedstart}{Random seed to use. [DEFAULT = 500]}
+\item{seedstart}{Random seed to use. Default 500}
 
-\item{verbose}{Logical, indicating if the current sample being rarefied should be reported during calculation. [DEFAULT = FALSE]}
+\item{verbose}{Logical, indicating if the current sample being rarefied should be reported during calculation. Default FALSE}
 }
 \value{
 Data frame with mean and sd alpha diversity for each alpha diveristy metric added to the sample data from phyloseq.

@@ -14,11 +14,11 @@ filter_prevalence(
 \arguments{
 \item{pobject}{A \code{phyloseq} object to filter}
 
-\item{group}{Sample data variable to filter by [DEFAILT = NA]}
+\item{group}{Sample data variable to filter by Default NA}
 
-\item{min.samples}{cut-off value per group (taxa below this value will be group in "Others") [DEFAULT = 10% of samples]}
+\item{min.samples}{cut-off value per group (taxa below this value will be group in "Others") Default 10 \% of samples}
 
-\item{includes}{If using groups, should taxa be if they are prevalent in more than min.samples in any, all, or a specific number of groups [DEFAULT = "all"]}
+\item{includes}{If using groups, should taxa be if they are prevalent in more than min.samples in any, all, or a specific number of groups Default "all"}
 }
 \value{
 A \code{phyloseq} object with the excluded taxa grouped as "Others"

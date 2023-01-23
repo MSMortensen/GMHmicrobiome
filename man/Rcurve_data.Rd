@@ -17,17 +17,17 @@ Rcurve_data(
 \arguments{
 \item{pobject}{A \code{phyloseq} object.}
 
-\item{ntables}{Number or rarefactions to perform. [DEFAULT = 10]}
+\item{ntables}{Number or rarefactions to perform. Default 10}
 
-\item{step}{Resolution of sequencing depth (interval between rarefactions). [DEFAULT = 250]}
+\item{step}{Resolution of sequencing depth (interval between rarefactions). Default 250]}
 
-\item{maxdepth}{Maximum sequencing depth to include [DEFAULT = sample depth of 90th percentile]}
+\item{maxdepth}{Maximum sequencing depth to include Default sample depth of 90th percentile}
 
-\item{methods}{Which alpha diversity metrics to calculate. [DEFAULT = c("Observed","Chao1","FaithPD","Shannon")]}
+\item{methods}{Which alpha diversity metrics to calculate. Default c("Observed","Chao1","FaithPD","Shannon")}
 
-\item{seedstart}{Random seed to use. [DEFAULT = 500]}
+\item{seedstart}{Random seed to use. Default 500}
 
-\item{verbose}{Logical, indicating if information should be reported during calculation. [DEFAULT = FALSE]}
+\item{verbose}{Logical, indicating if information should be reported during calculation. Default FALSE}
 }
 \value{
 Data frame with average alpha diversity per sample at each sequencing depth (from 1 to maxdepth)

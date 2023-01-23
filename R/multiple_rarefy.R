@@ -1,9 +1,9 @@
 #' Multiple rarefication
 #'
-#' @description Create multiple rarefications of each sample and select most representative iteration
+#' @description Create multiple rarefications of each sample and select most representative iteration.
 #' @param pobject A \code{phyloseq} object.
 #' @param ntables Number or rarefactions to perform. Default 100
-#' @param depth Rarefaction depth at which the alpha diversity is calculated. Default 90 % of the lowest sample depth
+#' @param depth Rarefaction depth at which the alpha diversity is calculated. Default 90 \% of the lowest sample depth
 #' @param distmethod Distance/dissimilarity metric used to asses iteration similarity. Must be one of: "manhattan", "euclidean", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup", "binomial", "chao", "cao", "mahalanobis", "chisq", "chord", "hellinger", "aitchison", or "robust.aitchison". Default "bray"
 #' @param summarymeasure Function to compare iterations. Default mean
 #' @param seedstart Random seed to use. Default 500

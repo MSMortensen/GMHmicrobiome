@@ -9,11 +9,11 @@ filter_abundance(pobject, group = NA, min.abundance = 0.01, includes = "any")
 \arguments{
 \item{pobject}{Phyloseq object to filter}
 
-\item{group}{Sample data variable to filter by [DEFAULT = NA]}
+\item{group}{Sample data variable to filter by Default NA}
 
-\item{min.abundance}{cut-off ratio (taxa with mean abundance below this ratio (0.1 = 10%) will be group in "Others") [DEFAULT = 0.001]}
+\item{min.abundance}{cut-off ratio (taxa with mean abundance below this ratio (0.1 = 10 \%) will be group in "Others") Default 0.001}
 
-\item{includes}{If using groups, should taxa be included if they are above the min.abundance in any, all, or a specific number of groups [DEFAULT = "any"]}
+\item{includes}{If using groups, should taxa be included if they are above the min.abundance in any, all, or a specific number of groups Default "any"}
 }
 \value{
 A filtered phyloseq object
