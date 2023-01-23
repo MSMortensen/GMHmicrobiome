@@ -2,12 +2,12 @@
 #'
 #' @description Create multiple rarefications of each sample and select most representative iteration
 #' @param pobject A \code{phyloseq} object.
-#' @param ntables Number or rarefactions to perform. [DEFAULT = 100]
-#' @param depth Rarefaction depth at which the alpha diversity is calculated. [DEFAULT = 90 % of the lowest sample depth]
-#' @param distmethod Distance/dissimilarity metric used to asses iteration similarity. Must be one of: "manhattan", "euclidean", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup", "binomial", "chao", "cao", "mahalanobis", "chisq", "chord", "hellinger", "aitchison", or "robust.aitchison". [DEFAULT = "bray"]
-#' @param summarymeasure Function to compare iterations. [DEFAULT = mean]
-#' @param seedstart Random seed to use. [DEFAULT = 500]
-#' @param verbose Logical, indicating if the current sample being rarefied should be reported during calculation. [DEFAULT = TRUE]
+#' @param ntables Number or rarefactions to perform. Default 100
+#' @param depth Rarefaction depth at which the alpha diversity is calculated. Default 90 % of the lowest sample depth
+#' @param distmethod Distance/dissimilarity metric used to asses iteration similarity. Must be one of: "manhattan", "euclidean", "canberra", "clark", "bray", "kulczynski", "jaccard", "gower", "altGower", "morisita", "horn", "mountford", "raup", "binomial", "chao", "cao", "mahalanobis", "chisq", "chord", "hellinger", "aitchison", or "robust.aitchison". Default "bray"
+#' @param summarymeasure Function to compare iterations. Default mean
+#' @param seedstart Random seed to use. Default 500
+#' @param verbose Logical, indicating if the current sample being rarefied should be reported during calculation. Default TRUE
 #'
 #' @return A rarefied \code{phyloseq} object with rarefied samples
 #' @export

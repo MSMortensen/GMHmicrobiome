@@ -2,9 +2,9 @@
 #'
 #' @description Filter low prevalence taxa in a phyloseq object and group them as "Others". Can be run for all samples or by groups
 #' @param pobject A \code{phyloseq} object to filter
-#' @param group Sample data variable to filter by [DEFAILT = NA]
-#' @param min.samples cut-off value per group (taxa below this value will be group in "Others") [DEFAULT = 10% of samples]
-#' @param includes If using groups, should taxa be if they are prevalent in more than min.samples in any, all, or a specific number of groups [DEFAULT = "all"]
+#' @param group Sample data variable to filter by Default NA
+#' @param min.samples cut-off value per group (taxa below this value will be group in "Others") Default 10% of samples
+#' @param includes If using groups, should taxa be if they are prevalent in more than min.samples in any, all, or a specific number of groups Default "all"
 #'
 #' @return A \code{phyloseq} object with the excluded taxa grouped as "Others"
 #' @export

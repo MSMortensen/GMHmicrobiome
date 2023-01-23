@@ -2,9 +2,9 @@
 #'
 #' @description Filter low abundance taxa in a phyloseq object and group them as "Others". Can be run for all samples together or per group
 #' @param pobject Phyloseq object to filter
-#' @param group Sample data variable to filter by [DEFAULT = NA]
-#' @param min.abundance cut-off ratio (taxa with mean abundance below this ratio (0.1 = 10%) will be group in "Others") [DEFAULT = 0.001]
-#' @param includes If using groups, should taxa be included if they are above the min.abundance in any, all, or a specific number of groups [DEFAULT = "any"]
+#' @param group Sample data variable to filter by Default NA
+#' @param min.abundance cut-off ratio (taxa with mean abundance below this ratio (0.1 = 10%) will be group in "Others") Default 0.001
+#' @param includes If using groups, should taxa be included if they are above the min.abundance in any, all, or a specific number of groups Default "any"
 #' @return A filtered phyloseq object
 #' @export
 #'

@@ -2,12 +2,12 @@
 #'
 #' @description Wrapper around calculate_alpha_diversity to generate rarefaction curve data with multiple rarefactions of each sample
 #' @param pobject A \code{phyloseq} object.
-#' @param ntables Number or rarefactions to perform. [DEFAULT = 10]
-#' @param step Resolution of sequencing depth (interval between rarefactions). [DEFAULT = 250]
-#' @param maxdepth Maximum sequencing depth to include [DEFAULT = sample depth of 90th percentile]
-#' @param methods Which alpha diversity metrics to calculate. [DEFAULT = c("Observed","Chao1","FaithPD","Shannon")]
-#' @param seedstart Random seed to use. [DEFAULT = 500]
-#' @param verbose Logical, indicating if information should be reported during calculation. [DEFAULT = FALSE]
+#' @param ntables Number or rarefactions to perform. Default 10
+#' @param step Resolution of sequencing depth (interval between rarefactions). Default 250]
+#' @param maxdepth Maximum sequencing depth to include Default sample depth of 90th percentile
+#' @param methods Which alpha diversity metrics to calculate. Default c("Observed","Chao1","FaithPD","Shannon")
+#' @param seedstart Random seed to use. Default 500
+#' @param verbose Logical, indicating if information should be reported during calculation. Default FALSE
 #'
 #' @return Data frame with average alpha diversity per sample at each sequencing depth (from 1 to maxdepth)
 #' @export

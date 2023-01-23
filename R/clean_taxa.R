@@ -1,8 +1,8 @@
 #' Clean phyloseq tax table
 #'
 #' @param pobject A \code{phyloseq} object to filter
-#' @param tax_remove The required level of classification. Any taxa not classified at least to this level will be removed [DEFAULTS = "Phylum"]
-#' @param verbose Logical, indicating if summary of removed taxa should be reported. [DEFAULT = TRUE]
+#' @param tax_remove The required level of classification. Any taxa not classified at least to this level will be removed Default "Phylum"
+#' @param verbose Logical, indicating if summary of removed taxa should be reported. Default TRUE
 #'
 #' @return The provided \code{phyloseq} object with an updated tax_table() and poorly classified taxa removed
 #' @export

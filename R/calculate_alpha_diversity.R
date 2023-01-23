@@ -2,11 +2,11 @@
 #'
 #' @description
 #' @param pobject A \code{phyloseq} object.
-#' @param ntables Number or rarefactions to perform. [DEFAULT = 100]
-#' @param depth Rarefaction depth at which the alpha diversity is calculated. [DEFAULT = 90 % of the lowest sample depth]
-#' @param methods Which alpha diversity metrics to calculate. [DEFAULT = c("Observed","Chao1","FaithPD","Shannon")]
-#' @param seedstart Random seed to use. [DEFAULT = 500]
-#' @param verbose Logical, indicating if the current sample being rarefied should be reported during calculation. [DEFAULT = FALSE]
+#' @param ntables Number or rarefactions to perform. Default 100
+#' @param depth Rarefaction depth at which the alpha diversity is calculated. Default 90 % of the lowest sample depth
+#' @param methods Which alpha diversity metrics to calculate. Default c("Observed","Chao1","FaithPD","Shannon")
+#' @param seedstart Random seed to use. Default 500
+#' @param verbose Logical, indicating if the current sample being rarefied should be reported during calculation. Default FALSE
 #'
 #' @return Data frame with mean and sd alpha diversity for each alpha diveristy metric added to the sample data from phyloseq.
 #' @export
