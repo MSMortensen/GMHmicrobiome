@@ -1,0 +1,17 @@
+Package: GMHmicrobiome
+Type: Package
+Title: Functions to support microbiome data analysis
+Version: 0.1.0
+Author: person("Martin","Mortensen", "martin@mortensen.one", role = c("aut","cre"))
+Description: This package contains functions to support analyses of 
+    sequencing data, this includes taxa cleaning and filtering, alpha 
+    diversity calculation, and multiple rarefaction.
+License: GPL (>= 3) | file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends:
+    R (>= 4.1.0)
+Imports:
+    phyloseq
+RoxygenNote: 7.2.3
+BugReports: https://github.com/MSMortensen/GMHmicrobiome/issues
