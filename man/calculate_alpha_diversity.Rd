@@ -30,5 +30,5 @@ calculate_alpha_diversity(
 Data frame with mean and sd alpha diversity for each alpha diveristy metric added to the sample data from phyloseq.
 }
 \description{
-Calculate alpha diversity using multiple rarefaction
+Randomly rarefies a \code{phyloseq} object ntables times (default = 100), and calculate the mean an sd values for the desired metrics.
 }

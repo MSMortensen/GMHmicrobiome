@@ -1,0 +1,1642 @@
+---
+title: "<PROJECT> Microbiome description"
+author: "Your Name"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::readthedown:
+    toc_depth: 4
+    collapsed: false
+    code_folding: hide
+    number_sections: false
+knit: (function(inputFile, encoding) { 
+    })
+    rmarkdown::render(
+        inputFile, encoding = encoding,
+        output_dir = file.path(dirname(inputFile),"output"),
+        output_file = paste0("<PROJECT>_", Sys.Date(), "_description.html")) 
+params:
+    input: "R_objects/<PHYLOSEQ OBJECT>"
+    group_var: "<GROUP VARIABLE>"
+    subject_var: "<SUBJECT VARIABLE>"
+    time_var: "<TIME VARIABLE>"
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+# INFO
+
+This template is build to use the output from **GMH_import** as input.
+It will generate a general summary of the microbiome for the project, on
+all taxonomic levels, followed by a detailed summary where the group and
+subject variables is considered in the description.
+
+The output will be observational, containing tables and plots, without
+any statistical analyses.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(GMHmicrobiome)
+library(ggpubr)
+library(kableExtra)
+library(phyloseq)
+
+# save parameters
+saveRDS(params, "R_objects/params_description")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+## PROJECT
+
+PLEASE GIVE A SHORT PROJECT SUMMARY HERE (sample origin, goal, etc.)
+
+## VARIABLES
+
+PLEASE EXPLAIN THE USED VARIABLES HERE (subject, group, and time)
+
+# FORMAT DATA
+
+To describe the data we will have to agglommerate the data to each
+taxonomic level. As this is time consuming, the default is to skip this
+step if the file "R_objects/Agglomerated.Rdata" does not exist.
+
+```{r format, include=FALSE, eval=(!file.exists("R_objects/Agglomerated.Rdata"))}
+# Load data
+load(params$input)
+
+# Update taxa_names
+## Species
+phy.sp <- tax_glom(phy, taxrank = "Species")
+taxnames <- as.vector(tax_table(phy.sp)[,7])
+taxdub <- taxnames[duplicated(taxnames)]
+for (tax in taxdub){
+  taxnames[taxnames == tax] <- paste(tax, seq(length(taxnames[taxnames == tax])), sep = "_")
+}
+taxa_names(phy.sp) <- taxnames
+
+## Genus
+phy.ge <- tax_glom(phy, taxrank = "Genus")
+taxnames <- as.vector(tax_table(phy.ge)[,6])
+taxdub <- taxnames[duplicated(taxnames)]
+for (tax in taxdub){
+  taxnames[taxnames == tax] <- paste(tax, seq(length(taxnames[taxnames == tax])), sep = "_")
+}
+taxa_names(phy.ge) <- taxnames
+
+## Family
+phy.fa <- tax_glom(phy, taxrank = "Family")
+taxnames <- as.vector(tax_table(phy.fa)[,5])
+taxdub <- taxnames[duplicated(taxnames)]
+for (tax in taxdub){
+  taxnames[taxnames == tax] <- paste(tax, seq(length(taxnames[taxnames == tax])), sep = "_")
+}
+taxa_names(phy.fa) <- taxnames
+
+## Order
+phy.or <- tax_glom(phy, taxrank = "Order")
+taxnames <- as.vector(tax_table(phy.or)[,4])
+taxdub <- taxnames[duplicated(taxnames)]
+for (tax in taxdub){
+  taxnames[taxnames == tax] <- paste(tax, seq(length(taxnames[taxnames == tax])), sep = "_")
+}
+taxa_names(phy.or) <- taxnames
+
+## Class
+phy.cl <- tax_glom(phy, taxrank = "Class")
+taxnames <- as.vector(tax_table(phy.cl)[,3])
+taxdub <- taxnames[duplicated(taxnames)]
+for (tax in taxdub){
+  taxnames[taxnames == tax] <- paste(tax, seq(length(taxnames[taxnames == tax])), sep = "_")
+}
+taxa_names(phy.cl) <- taxnames
+
+## Phylum
+phy.ph <- tax_glom(phy, taxrank = "Phylum")
+taxnames <- as.vector(tax_table(phy.ph)[,2])
+taxdub <- taxnames[duplicated(taxnames)]
+for (tax in taxdub){
+  taxnames[taxnames == tax] <- paste(tax, seq(length(taxnames[taxnames == tax])), sep = "_")
+}
+taxa_names(phy.ph) <- taxnames
+
+# save agglomerated phyloseq objects
+save(phy.sp, phy.ge, phy.fa, phy.or, phy.cl, phy.ph, file = "R_objects/Agglomerated.RData")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+# OVERALL {.tabset .tabset-dropdown}
+
+This section produces a general description of the data with the plots
+grouped by the group_var, but without using any other metadata.
+
+If there are no relevant groups in this part of the analysis it can also
+be used to indicate batches. If no groups or batches exist, then please
+create a variable that just indicate the project name for all samples.
+
+## PHYLUM {.tabset .tabset-fade .tabset-pills}
+
+### COUNTS
+
+At phylum level the microbiome counts are as follows
+
+```{r}
+# load data 
+load("R_objects/Agglomerated.RData")
+params <- readRDS( "R_objects/params_description")
+
+# Transform data
+phy.rel <- transform_sample_counts(phy.ph, fun = function(x) x/sum(x)*100)
+dat <- psmelt(phy.rel)
+
+# summarise per sample
+sumsample <- dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(Sample) %>% 
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>% 
+  pivot_longer(-Sample, 
+               names_to = c("Cutoff"), 
+               values_to = "Count") %>% 
+  group_by(Cutoff) %>% 
+  summarise(sample_mean = mean(Count), 
+            sample_sd = sd(Count))
+
+# summarise total
+sumall <- dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(OTU) %>% 
+  summarise(Abundance = mean(Abundance)) %>% 
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>% 
+  pivot_longer(cols = everything(), 
+               names_to = c("Cutoff"), 
+               values_to = "Count")
+
+# Combine
+output <- full_join(sumall, sumsample)
+output$Cutoff <- c("All", "n < 0.1%", "0.1% < n < 1.0%", "1.0% < n < 10%", "10%  < n")
+
+# Create output table
+kable(output, row.names = F,digits = 2, caption = 'Count of phyla in general and per sample',align = "r") %>% 
+  kable_classic(full_width = F, position = "left")
+                                              
+```
+
+### PLOTS
+
+To improve the interpretation of the compositional plots I will pretreat
+the data with three steps:
+
+1.  Filter taxa by average abundance (minimum 1 %) and rank (max 19
+    features + "Others")
+
+2.  Sort the plotted taxa by full phylogeny
+
+3.  Change taxa names in plot to a letter and include table of full
+    taxonomy
+
+```{r}
+# Filter by abundance, then rank
+phy.top <- filter_abundance(phy.rel) %>% filter_rank(min.rank = 19)
+
+#Melt data
+dat <- suppressWarnings(psmelt(phy.top))
+colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
+
+# Sort taxa
+dat.sort <- sort_taxa(dat) 
+
+# rename taxa
+levels(dat.sort$Taxa) <- LETTERS[seq(length(levels(dat.sort$Taxa)))]
+
+# Create plot
+p <- ggplot(dat.sort, aes(x = SampleID,
+                          y = Abundance,
+                          fill = Taxa,
+                          color = Taxa)) +
+  geom_col() +
+  xlab("") + 
+  facet_grid(. ~ get(params$group_var),space = "free_x",scales = "free_x") +
+  ggsci::scale_color_d3(palette = "category20") + 
+  ggsci::scale_fill_d3(palette = "category20") + 
+  guides(fill=guide_legend(ncol=2), color=guide_legend(ncol=2)) +
+  clean_theme()
+p
+
+# print tax table
+# print tax table
+tax <- dat.sort %>% group_by(Taxa, Kingdom, Phylum) %>% summarise(Abundance = mean(Abundance))
+
+
+kable(tax,digits = 2,caption = paste("Taxa plotted", sep = " ")) %>%
+  kable_classic(full_width = F, position = "left")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+## CLASS {.tabset .tabset-fade .tabset-pills}
+
+### COUNTS
+
+At class level the microbiome counts are as follows
+
+```{r}
+# load data 
+load("R_objects/Agglomerated.RData")
+params <- readRDS( "R_objects/params_description")
+
+# Transform data
+phy.rel <- transform_sample_counts(phy.cl, fun = function(x) x/sum(x)*100)
+dat <- psmelt(phy.rel)
+
+# summarise per sample
+sumsample <- dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(Sample) %>% 
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>% 
+  pivot_longer(-Sample, 
+               names_to = c("Cutoff"), 
+               values_to = "Count") %>% 
+  group_by(Cutoff) %>% 
+  summarise(sample_mean = mean(Count), 
+            sample_sd = sd(Count))
+
+# summarise total
+sumall <- dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(OTU) %>% 
+  summarise(Abundance = mean(Abundance)) %>% 
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>% 
+  pivot_longer(cols = everything(), 
+               names_to = c("Cutoff"), 
+               values_to = "Count")
+
+# Combine
+output <- full_join(sumall, sumsample)
+output$Cutoff <- c("All", "n < 0.1%", "0.1% < n < 1.0%", "1.0% < n < 10%", "10%  < n")
+
+# Create output table
+kable(output, row.names = F,digits = 2, caption = 'Count of classes in general and per sample') %>% 
+  kable_classic(full_width = F, position = "left")
+                                              
+```
+
+### PLOTS
+
+To improve the interpretation of the compositional plots I will pretreat
+the data with three steps:
+
+1.  Filter taxa by average abundance (minimum 1 %) and rank (max 19
+    features + "Others")
+
+2.  Sort the plotted taxa by full phylogeny
+
+3.  Change taxa names in plot to a letter and include table of full
+    taxonomy
+
+```{r}
+# Filter by abundance, then rank
+phy.top <- filter_abundance(phy.rel) %>% filter_rank(min.rank = 19)
+
+#Melt data
+dat <- suppressWarnings(psmelt(phy.top))
+colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
+
+# Sort taxa
+dat.sort <- sort_taxa(dat) 
+
+# rename taxa
+levels(dat.sort$Taxa) <- LETTERS[seq(length(levels(dat.sort$Taxa)))]
+
+# Create plot
+p <- ggplot(dat.sort, aes(x = SampleID,
+                          y = Abundance,
+                          fill = Taxa,
+                          color = Taxa)) +
+  geom_col() +
+  xlab("") + 
+  facet_grid(. ~ get(params$group_var),space = "free_x",scales = "free_x") +
+  ggsci::scale_color_d3(palette = "category20") + 
+  ggsci::scale_fill_d3(palette = "category20") + 
+  guides(fill=guide_legend(ncol=2), color=guide_legend(ncol=2)) +
+  clean_theme()
+p
+
+# print tax table
+# print tax table
+tax <- dat.sort %>% group_by(Taxa, Kingdom, Phylum, Class) %>% summarise(Abundance = mean(Abundance))
+
+
+kable(tax,digits = 2,caption = paste("Taxa plotted", sep = " ")) %>%
+  kable_classic(full_width = F, position = "left")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+## ORDER {.tabset .tabset-fade .tabset-pills}
+
+### COUNTS
+
+At order level the microbiome counts are as follows
+
+```{r}
+# load data 
+load("R_objects/Agglomerated.RData")
+params <- readRDS( "R_objects/params_description")
+
+# Transform data
+phy.rel <- transform_sample_counts(phy.or, fun = function(x) x/sum(x)*100)
+dat <- psmelt(phy.rel)
+
+# summarise per sample
+sumsample <- dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(Sample) %>% 
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>% 
+  pivot_longer(-Sample, 
+               names_to = c("Cutoff"), 
+               values_to = "Count") %>% 
+  group_by(Cutoff) %>% 
+  summarise(sample_mean = mean(Count), 
+            sample_sd = sd(Count))
+
+# summarise total
+sumall <- dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(OTU) %>% 
+  summarise(Abundance = mean(Abundance)) %>% 
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>% 
+  pivot_longer(cols = everything(), 
+               names_to = c("Cutoff"), 
+               values_to = "Count")
+
+# Combine
+output <- full_join(sumall, sumsample)
+output$Cutoff <- c("All", "n < 0.1%", "0.1% < n < 1.0%", "1.0% < n < 10%", "10%  < n")
+
+# Create output table
+kable(output, row.names = F,digits = 2, caption = 'Count of phyla in general and per sample',align = "r") %>% 
+  kable_classic(full_width = F, position = "left")
+                                              
+```
+
+### PLOTS
+
+To improve the interpretation of the compositional plots I will pretreat
+the data with three steps:
+
+1.  Filter taxa by average abundance (minimum 1 %) and rank (max 19
+    features + "Others")
+
+2.  Sort the plotted taxa by full phylogeny
+
+3.  Change taxa names in plot to a letter and include table of full
+    taxonomy
+
+```{r}
+# Filter by abundance, then rank
+phy.top <- filter_abundance(phy.rel) %>% filter_rank(min.rank = 19)
+
+#Melt data
+dat <- suppressWarnings(psmelt(phy.top))
+colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
+
+# Sort taxa
+dat.sort <- sort_taxa(dat) 
+
+# rename taxa
+levels(dat.sort$Taxa) <- LETTERS[seq(length(levels(dat.sort$Taxa)))]
+
+# Create plot
+p <- ggplot(dat.sort, aes(x = SampleID,
+                          y = Abundance,
+                          fill = Taxa,
+                          color = Taxa)) +
+  geom_col() +
+  xlab("") + 
+  facet_grid(. ~ get(params$group_var),space = "free_x",scales = "free_x") +
+  ggsci::scale_color_d3(palette = "category20") + 
+  ggsci::scale_fill_d3(palette = "category20") + 
+  guides(fill=guide_legend(ncol=2), color=guide_legend(ncol=2)) +
+  clean_theme()
+p
+
+# print tax table
+# print tax table
+tax <- dat.sort %>% group_by(Taxa, Kingdom, Phylum, Class, Order) %>% summarise(Abundance = mean(Abundance))
+
+
+kable(tax,digits = 2,caption = paste("Taxa plotted", sep = " ")) %>%
+  kable_classic(full_width = F, position = "left")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+## FAMILY {.tabset .tabset-fade .tabset-pills}
+
+### COUNTS
+
+At family level the microbiome counts are as follows
+
+```{r}
+# load data 
+load("R_objects/Agglomerated.RData")
+params <- readRDS( "R_objects/params_description")
+
+# Transform data
+phy.rel <- transform_sample_counts(phy.fa, fun = function(x) x/sum(x)*100)
+dat <- psmelt(phy.rel)
+
+# summarise per sample
+sumsample <- dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(Sample) %>% 
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>% 
+  pivot_longer(-Sample, 
+               names_to = c("Cutoff"), 
+               values_to = "Count") %>% 
+  group_by(Cutoff) %>% 
+  summarise(sample_mean = mean(Count), 
+            sample_sd = sd(Count))
+
+# summarise total
+sumall <- dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(OTU) %>% 
+  summarise(Abundance = mean(Abundance)) %>% 
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>% 
+  pivot_longer(cols = everything(), 
+               names_to = c("Cutoff"), 
+               values_to = "Count")
+
+# Combine
+output <- full_join(sumall, sumsample)
+output$Cutoff <- c("All", "n < 0.1%", "0.1% < n < 1.0%", "1.0% < n < 10%", "10%  < n")
+
+# Create output table
+kable(output, row.names = F,digits = 2, caption = 'Count of phyla in general and per sample',align = "r") %>% 
+  kable_classic(full_width = F, position = "left")
+                                              
+```
+
+### PLOTS
+
+To improve the interpretation of the compositional plots I will pretreat
+the data with three steps:
+
+1.  Filter taxa by average abundance (minimum 1 %) and rank (max 19
+    features + "Others")
+
+2.  Sort the plotted taxa by full phylogeny
+
+3.  Change taxa names in plot to a letter and include table of full
+    taxonomy
+
+```{r}
+# Filter by abundance, then rank
+phy.top <- filter_abundance(phy.rel) %>% filter_rank(min.rank = 19)
+
+#Melt data
+dat <- suppressWarnings(psmelt(phy.top))
+colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
+
+# Sort taxa
+dat.sort <- sort_taxa(dat) 
+
+# rename taxa
+levels(dat.sort$Taxa) <- LETTERS[seq(length(levels(dat.sort$Taxa)))]
+
+# Create plot
+p <- ggplot(dat.sort, aes(x = SampleID,
+                          y = Abundance,
+                          fill = Taxa,
+                          color = Taxa)) +
+  geom_col() +
+  xlab("") + 
+  facet_grid(. ~ get(params$group_var),space = "free_x",scales = "free_x") +
+  ggsci::scale_color_d3(palette = "category20") + 
+  ggsci::scale_fill_d3(palette = "category20") + 
+  guides(fill=guide_legend(ncol=2), color=guide_legend(ncol=2)) +
+  clean_theme()
+p
+
+# print tax table
+# print tax table
+tax <- dat.sort %>% group_by(Taxa, Kingdom, Phylum, Class, Order, Family) %>% summarise(Abundance = mean(Abundance))
+
+
+kable(tax,digits = 2,caption = paste("Taxa plotted", sep = " ")) %>%
+  kable_classic(full_width = F, position = "left")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+## GENUS {.tabset .tabset-fade .tabset-pills}
+
+### COUNTS
+
+At genus level the microbiome counts are as follows
+
+```{r}
+# load data 
+load("R_objects/Agglomerated.RData")
+params <- readRDS( "R_objects/params_description")
+
+# Transform data
+phy.rel <- transform_sample_counts(phy.ge, fun = function(x) x/sum(x)*100)
+dat <- psmelt(phy.rel)
+
+# summarise per sample
+sumsample <- dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(Sample) %>% 
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>% 
+  pivot_longer(-Sample, 
+               names_to = c("Cutoff"), 
+               values_to = "Count") %>% 
+  group_by(Cutoff) %>% 
+  summarise(sample_mean = mean(Count), 
+            sample_sd = sd(Count))
+
+# summarise total
+sumall <- dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(OTU) %>% 
+  summarise(Abundance = mean(Abundance)) %>% 
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>% 
+  pivot_longer(cols = everything(), 
+               names_to = c("Cutoff"), 
+               values_to = "Count")
+
+# Combine
+output <- full_join(sumall, sumsample)
+output$Cutoff <- c("All", "n < 0.1%", "0.1% < n < 1.0%", "1.0% < n < 10%", "10%  < n")
+
+# Create output table
+kable(output, row.names = F,digits = 2, caption = 'Count of phyla in general and per sample',align = "r") %>% 
+  kable_classic(full_width = F, position = "left")
+                                              
+```
+
+### PLOTS
+
+To improve the interpretation of the compositional plots I will pretreat
+the data with three steps:
+
+1.  Filter taxa by average abundance (minimum 1 %) and rank (max 19
+    features + "Others")
+
+2.  Sort the plotted taxa by full phylogeny
+
+3.  Change taxa names in plot to a letter and include table of full
+    taxonomy
+
+```{r}
+# Filter by abundance, then rank
+phy.top <- filter_abundance(phy.rel) %>% filter_rank(min.rank = 19)
+
+#Melt data
+dat <- suppressWarnings(psmelt(phy.top))
+colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
+
+# Sort taxa
+dat.sort <- sort_taxa(dat) 
+
+# rename taxa
+levels(dat.sort$Taxa) <- LETTERS[seq(length(levels(dat.sort$Taxa)))]
+
+# Create plot
+p <- ggplot(dat.sort, aes(x = SampleID,
+                          y = Abundance,
+                          fill = Taxa,
+                          color = Taxa)) +
+  geom_col() +
+  xlab("") + 
+  facet_grid(. ~ get(params$group_var),space = "free_x",scales = "free_x") +
+  ggsci::scale_color_d3(palette = "category20") + 
+  ggsci::scale_fill_d3(palette = "category20") + 
+  guides(fill=guide_legend(ncol=2), color=guide_legend(ncol=2)) +
+  clean_theme()
+p
+
+# print tax table
+# print tax table
+tax <- dat.sort %>% group_by(Taxa, Kingdom, Phylum, Class, Order, Family, Genus) %>% summarise(Abundance = mean(Abundance))
+
+
+kable(tax,digits = 2,caption = paste("Taxa plotted", sep = " ")) %>%
+  kable_classic(full_width = F, position = "left")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+## SPECIES {.tabset .tabset-fade .tabset-pills}
+
+### COUNTS
+
+At species level the microbiome counts are as follows
+
+```{r}
+# load data 
+load("R_objects/Agglomerated.RData")
+params <- readRDS( "R_objects/params_description")
+
+# Transform data
+phy.rel <- transform_sample_counts(phy.sp, fun = function(x) x/sum(x)*100)
+dat <- psmelt(phy.rel)
+
+# summarise per sample
+sumsample <- dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(Sample) %>% 
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>% 
+  pivot_longer(-Sample, 
+               names_to = c("Cutoff"), 
+               values_to = "Count") %>% 
+  group_by(Cutoff) %>% 
+  summarise(sample_mean = mean(Count), 
+            sample_sd = sd(Count))
+
+# summarise total
+sumall <- dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(OTU) %>% 
+  summarise(Abundance = mean(Abundance)) %>% 
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>% 
+  pivot_longer(cols = everything(), 
+               names_to = c("Cutoff"), 
+               values_to = "Count")
+
+# Combine
+output <- full_join(sumall, sumsample)
+output$Cutoff <- c("All", "n < 0.1%", "0.1% < n < 1.0%", "1.0% < n < 10%", "10%  < n")
+
+# Create output table
+kable(output, row.names = F,digits = 2, caption = 'Count of phyla in general and per sample',align = "r") %>% 
+  kable_classic(full_width = F, position = "left")
+                                              
+```
+
+### PLOTS
+
+To improve the interpretation of the compositional plots I will pretreat
+the data with three steps:
+
+1.  Filter taxa by average abundance (minimum 1 %) and rank (max 19
+    features + "Others")
+
+2.  Sort the plotted taxa by full phylogeny
+
+3.  Change taxa names in plot to a letter and include table of full
+    taxonomy
+
+```{r}
+# Filter by abundance, then rank
+phy.top <- filter_abundance(phy.rel) %>% filter_rank(min.rank = 19)
+
+#Melt data
+dat <- suppressWarnings(psmelt(phy.top))
+colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
+
+# Sort taxa
+dat.sort <- sort_taxa(dat) 
+
+# rename taxa
+levels(dat.sort$Taxa) <- LETTERS[seq(length(levels(dat.sort$Taxa)))]
+
+# Create plot
+p <- ggplot(dat.sort, aes(x = SampleID,
+                          y = Abundance,
+                          fill = Taxa,
+                          color = Taxa)) +
+  geom_col() +
+  xlab("") + 
+  facet_grid(. ~ get(params$group_var),space = "free_x",scales = "free_x") +
+  ggsci::scale_color_d3(palette = "category20") + 
+  ggsci::scale_fill_d3(palette = "category20") + 
+  guides(fill=guide_legend(ncol=2), color=guide_legend(ncol=2)) +
+  clean_theme()
+p
+
+# print tax table
+tax <- dat.sort %>% group_by(Taxa, Kingdom, Phylum, Class, Order, Family, Genus, Species) %>% summarise(Abundance = mean(Abundance))
+
+
+kable(tax,digits = 2,caption = paste("Taxa plotted", sep = " ")) %>%
+  kable_classic(full_width = F, position = "left")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+# DETAILED {.tabset .tabset-fade .tabset-dropdown}
+
+Many projects contain multiple timepoints and for those it can be
+relevant to see data organised by group and time. For the plots in this
+part of the script it is required that all parameters set in the header
+matches a sample variable. Also, the plots will be created with the
+subject_var on the x-axis instead of the sample var, so it is important
+that there are no duplicates when combining subject_var and time_var.
+
+## PHYLUM {.tabset .tabset-fade .tabset-pills}
+
+### COUNTS
+
+At phylum level the microbiome counts are as follows for each group and
+timepoint
+
+```{r}
+# load data 
+load("R_objects/Agglomerated.RData")
+params <- readRDS( "R_objects/params_description")
+
+# Remove samples with missing data
+phy.use <- prune_samples(sample_names(phy.ph)[!is.na(sample_data(phy.ph)[,params$group_var]) & !is.na(sample_data(phy.ph)[,params$time_var])], phy.ph)
+
+# Transform data
+phy.rel <- transform_sample_counts(phy.use, fun = function(x) x/sum(x)*100)
+dat <- psmelt(phy.rel)
+
+# summarise per sample
+sumsample <- 
+  dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(Sample, .data[[params$group_var]], .data[[params$time_var]]) %>% 
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>%
+  pivot_longer(starts_with("pct"), 
+               names_to = c("Cutoff"), 
+               values_to = "Count") %>% 
+  group_by(Cutoff, .data[[params$group_var]], .data[[params$time_var]]) %>% 
+  summarise(mean = round(mean(Count),2), 
+            sd = round(sd(Count),2)) 
+  
+# summarise total
+sumall <- dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(OTU, .data[[params$group_var]], .data[[params$time_var]]) %>%
+  summarise(Abundance = mean(Abundance)) %>%
+  group_by(.data[[params$group_var]], .data[[params$time_var]]) %>%
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>%
+  pivot_longer(starts_with("pct"), 
+               names_to = c("Cutoff"), 
+               values_to = "n")
+
+# Combine
+output <- full_join(sumall, sumsample) %>% 
+  pivot_wider(id_cols = c(Cutoff, .data[[params$time_var]]), 
+              names_from = .data[[params$group_var]],
+              values_from = c(n, mean, sd), 
+              names_vary = "slowest") %>%
+  mutate(Cutoff=factor(Cutoff))
+
+
+levels(output$Cutoff) <- c("All", "n < 0.1%", "0.1% < n < 1.0%", "1.0% < n < 10%", "10%  < n")
+
+# Create output table
+kable(output, row.names = F,digits = 2, caption = 'Count of phyla in general and per sample',align = "r") %>% 
+  kable_classic(full_width = F, position = "left")
+                                              
+```
+
+### PLOTS
+
+To improve the interpretation of the compositional plots I will pretreat
+the data with three steps:
+
+1.  Filter taxa by average abundance (minimum 1 %) and rank (max 19
+    features + "Others")
+
+2.  Sort the plotted taxa by full phylogeny
+
+3.  Change taxa names in plot to a letter and include table of full
+    taxonomy
+
+Following this I will incorporate both time_var and subject_var in the
+plot
+
+```{r}
+# Filter by abundance, then rank
+phy.top <- filter_abundance(phy.rel, group = params$group_var,includes = "any") %>% filter_rank(group = params$time_var,min.rank = 6,includes = "any")
+
+#Melt data
+dat <- suppressWarnings(psmelt(phy.top))
+colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
+
+# Sort taxa
+dat.sort <- sort_taxa(dat) 
+
+# rename taxa
+levels(dat.sort$Taxa) <- LETTERS[seq(length(levels(dat.sort$Taxa)))]
+
+# ensure that the variables are factors
+dat.sort[,params$time_var] <- factor(dat.sort[,params$time_var])
+dat.sort[,params$subject_var] <- factor(dat.sort[,params$subject_var])
+dat.sort[,params$group_var] <- factor(dat.sort[,params$group_var])
+
+# Create plot
+p <- ggplot(dat.sort, aes(x = .data[[params$subject_var]],
+                          y = Abundance,
+                          fill = Taxa,
+                          color = Taxa)) +
+  geom_col() +
+  xlab("") + 
+  facet_grid(get(params$time_var) ~ get(params$group_var),
+             space = "free_x",scales = "free_x") +
+  ggsci::scale_color_d3(palette = "category20") + 
+  ggsci::scale_fill_d3(palette = "category20") + 
+  guides(fill=guide_legend(ncol=2), color=guide_legend(ncol=2)) +
+  clean_theme()
+p
+
+# print tax table
+# print tax table
+tax <- dat.sort %>% distinct(Taxa, .keep_all = T)%>% select(Taxa, Kingdom, Phylum)
+
+
+kable(tax,digits = 2,caption = paste("Taxa plotted", sep = " ")) %>%
+  kable_classic(full_width = F, position = "left")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+## CLASS {.tabset .tabset-fade .tabset-pills}
+
+### COUNTS
+
+At class level the microbiome counts are as follows for each group and
+timepoint
+
+```{r}
+# load data 
+load("R_objects/Agglomerated.RData")
+params <- readRDS( "R_objects/params_description")
+
+# Remove samples with missing data
+phy.use <- prune_samples(sample_names(phy.cl)[!is.na(sample_data(phy.cl)[,params$group_var]) & !is.na(sample_data(phy.cl)[,params$time_var])], phy.cl)
+
+# Transform data
+phy.rel <- transform_sample_counts(phy.use, fun = function(x) x/sum(x)*100)
+dat <- psmelt(phy.rel)
+
+# summarise per sample
+sumsample <- 
+  dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(Sample, .data[[params$group_var]], .data[[params$time_var]]) %>% 
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>%
+  pivot_longer(starts_with("pct"), 
+               names_to = c("Cutoff"), 
+               values_to = "Count") %>% 
+  group_by(Cutoff, .data[[params$group_var]], .data[[params$time_var]]) %>% 
+  summarise(mean = round(mean(Count),2), 
+            sd = round(sd(Count),2)) 
+  
+# summarise total
+sumall <- dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(OTU, .data[[params$group_var]], .data[[params$time_var]]) %>%
+  summarise(Abundance = mean(Abundance)) %>%
+  group_by(.data[[params$group_var]], .data[[params$time_var]]) %>%
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>%
+  pivot_longer(starts_with("pct"), 
+               names_to = c("Cutoff"), 
+               values_to = "n")
+
+# Combine
+output <- full_join(sumall, sumsample) %>% 
+  pivot_wider(id_cols = c(Cutoff, .data[[params$time_var]]), 
+              names_from = .data[[params$group_var]],
+              values_from = c(n, mean, sd), 
+              names_vary = "slowest") %>%
+  mutate(Cutoff=factor(Cutoff))
+
+
+levels(output$Cutoff) <- c("All", "n < 0.1%", "0.1% < n < 1.0%", "1.0% < n < 10%", "10%  < n")
+
+# Create output table
+kable(output, row.names = F,digits = 2, caption = 'Count of classes in general and per sample',align = "r") %>% 
+  kable_classic(full_width = F, position = "left")
+                                              
+```
+
+### PLOTS
+
+To improve the interpretation of the compositional plots I will pretreat
+the data with three steps:
+
+1.  Filter taxa by average abundance (minimum 1 %) and rank (max 19
+    features + "Others")
+
+2.  Sort the plotted taxa by full phylogeny
+
+3.  Change taxa names in plot to a letter and include table of full
+    taxonomy
+
+Following this I will incorporate both time_var and subject_var in the
+plot
+
+```{r}
+# Filter by abundance, then rank
+phy.top <- filter_abundance(phy.rel, group = params$group_var,includes = "any") %>% filter_rank(group = params$time_var,min.rank = 6,includes = "any")
+
+#Melt data
+dat <- suppressWarnings(psmelt(phy.top))
+colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
+
+# Sort taxa
+dat.sort <- sort_taxa(dat) 
+
+# rename taxa
+levels(dat.sort$Taxa) <- LETTERS[seq(length(levels(dat.sort$Taxa)))]
+
+# ensure that the variables are factors
+dat.sort[,params$time_var] <- factor(dat.sort[,params$time_var])
+dat.sort[,params$subject_var] <- factor(dat.sort[,params$subject_var])
+dat.sort[,params$group_var] <- factor(dat.sort[,params$group_var])
+
+# Create plot
+p <- ggplot(dat.sort, aes(x = .data[[params$subject_var]],
+                          y = Abundance,
+                          fill = Taxa,
+                          color = Taxa)) +
+  geom_col() +
+  xlab("") + 
+  facet_grid(get(params$time_var) ~ get(params$group_var),
+             space = "free_x",scales = "free_x") +
+  ggsci::scale_color_d3(palette = "category20") + 
+  ggsci::scale_fill_d3(palette = "category20") + 
+  guides(fill=guide_legend(ncol=2), color=guide_legend(ncol=2)) +
+  clean_theme()
+p
+
+# print tax table
+# print tax table
+tax <- dat.sort %>% distinct(Taxa,.keep_all = T) %>% select(Taxa, Kingdom, Phylum, Class)
+
+kable(tax,digits = 2,caption = paste("Taxa plotted", sep = " ")) %>%
+  kable_classic(full_width = F, position = "left")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+## ORDER {.tabset .tabset-fade .tabset-pills}
+
+### COUNTS
+
+At order level the microbiome counts are as follows for each group and
+timepoint
+
+```{r}
+# load data 
+load("R_objects/Agglomerated.RData")
+params <- readRDS( "R_objects/params_description")
+
+# Remove samples with missing data
+phy.use <- prune_samples(sample_names(phy.or)[!is.na(sample_data(phy.or)[,params$group_var]) & !is.na(sample_data(phy.or)[,params$time_var])], phy.or)
+
+
+# Transform data
+phy.rel <- transform_sample_counts(phy.use, fun = function(x) x/sum(x)*100)
+dat <- psmelt(phy.rel)
+
+# summarise per sample
+sumsample <- 
+  dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(Sample, .data[[params$group_var]], .data[[params$time_var]]) %>% 
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>%
+  pivot_longer(starts_with("pct"), 
+               names_to = c("Cutoff"), 
+               values_to = "Count") %>% 
+  group_by(Cutoff, .data[[params$group_var]], .data[[params$time_var]]) %>% 
+  summarise(mean = round(mean(Count),2), 
+            sd = round(sd(Count),2)) 
+  
+# summarise total
+sumall <- dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(OTU, .data[[params$group_var]], .data[[params$time_var]]) %>%
+  summarise(Abundance = mean(Abundance)) %>%
+  group_by(.data[[params$group_var]], .data[[params$time_var]]) %>%
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>%
+  pivot_longer(starts_with("pct"), 
+               names_to = c("Cutoff"), 
+               values_to = "n")
+
+# Combine
+output <- full_join(sumall, sumsample) %>% 
+  pivot_wider(id_cols = c(Cutoff, .data[[params$time_var]]), 
+              names_from = .data[[params$group_var]],
+              values_from = c(n, mean, sd), 
+              names_vary = "slowest") %>%
+  mutate(Cutoff=factor(Cutoff))
+
+
+levels(output$Cutoff) <- c("All", "n < 0.1%", "0.1% < n < 1.0%", "1.0% < n < 10%", "10%  < n")
+
+# Create output table
+kable(output, row.names = F,digits = 2, caption = 'Count of orders in general and per sample',align = "r") %>% 
+  kable_classic(full_width = F, position = "left")
+                                              
+```
+
+### PLOTS
+
+To improve the interpretation of the compositional plots I will pretreat
+the data with three steps:
+
+1.  Filter taxa by average abundance (minimum 1 %) and rank (max 19
+    features + "Others")
+
+2.  Sort the plotted taxa by full phylogeny
+
+3.  Change taxa names in plot to a letter and include table of full
+    taxonomy
+
+Following this I will incorporate both time_var and subject_var in the
+plot
+
+```{r}
+# Filter by abundance, then rank
+phy.top <- filter_abundance(phy.rel, group = params$group_var,includes = "any") %>% filter_rank(group = params$time_var,min.rank = 6,includes = "any")
+
+#Melt data
+dat <- suppressWarnings(psmelt(phy.top))
+colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
+
+# Sort taxa
+dat.sort <- sort_taxa(dat) 
+
+# rename taxa
+levels(dat.sort$Taxa) <- LETTERS[seq(length(levels(dat.sort$Taxa)))]
+
+# ensure that the variables are factors
+dat.sort[,params$time_var] <- factor(dat.sort[,params$time_var])
+dat.sort[,params$subject_var] <- factor(dat.sort[,params$subject_var])
+dat.sort[,params$group_var] <- factor(dat.sort[,params$group_var])
+
+# Create plot
+p <- ggplot(dat.sort, aes(x = .data[[params$subject_var]],
+                          y = Abundance,
+                          fill = Taxa,
+                          color = Taxa)) +
+  geom_col() +
+  xlab("") + 
+  facet_grid(get(params$time_var) ~ get(params$group_var),
+             space = "free_x",scales = "free_x") +
+  ggsci::scale_color_d3(palette = "category20") + 
+  ggsci::scale_fill_d3(palette = "category20") + 
+  guides(fill=guide_legend(ncol=2), color=guide_legend(ncol=2)) +
+  clean_theme()
+p
+
+# print tax table
+# print tax table
+tax <- dat.sort %>% distinct(Taxa,.keep_all = T) %>% select(Taxa, Kingdom, Phylum, Class, Order)
+
+kable(tax,digits = 2,caption = paste("Taxa plotted", sep = " ")) %>%
+  kable_classic(full_width = F, position = "left")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+## FAMILY {.tabset .tabset-fade .tabset-pills}
+
+### COUNTS
+
+At family level the microbiome counts are as follows for each group and
+timepoint
+
+```{r}
+# load data 
+load("R_objects/Agglomerated.RData")
+params <- readRDS( "R_objects/params_description")
+
+# Remove samples with missing data
+phy.use <- prune_samples(sample_names(phy.fa)[!is.na(sample_data(phy.fa)[,params$group_var]) & !is.na(sample_data(phy.fa)[,params$time_var])], phy.fa)
+
+# Transform data
+phy.rel <- transform_sample_counts(phy.use, fun = function(x) x/sum(x)*100)
+dat <- psmelt(phy.rel)
+
+# summarise per sample
+sumsample <- 
+  dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(Sample, .data[[params$group_var]], .data[[params$time_var]]) %>% 
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>%
+  pivot_longer(starts_with("pct"), 
+               names_to = c("Cutoff"), 
+               values_to = "Count") %>% 
+  group_by(Cutoff, .data[[params$group_var]], .data[[params$time_var]]) %>% 
+  summarise(mean = round(mean(Count),2), 
+            sd = round(sd(Count),2)) 
+  
+# summarise total
+sumall <- dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(OTU, .data[[params$group_var]], .data[[params$time_var]]) %>%
+  summarise(Abundance = mean(Abundance)) %>%
+  group_by(.data[[params$group_var]], .data[[params$time_var]]) %>%
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>%
+  pivot_longer(starts_with("pct"), 
+               names_to = c("Cutoff"), 
+               values_to = "n")
+
+# Combine
+output <- full_join(sumall, sumsample) %>% 
+  pivot_wider(id_cols = c(Cutoff, .data[[params$time_var]]), 
+              names_from = .data[[params$group_var]],
+              values_from = c(n, mean, sd), 
+              names_vary = "slowest") %>%
+  mutate(Cutoff=factor(Cutoff))
+
+
+levels(output$Cutoff) <- c("All", "n < 0.1%", "0.1% < n < 1.0%", "1.0% < n < 10%", "10%  < n")
+
+# Create output table
+kable(output, row.names = F,digits = 2, caption = 'Count of families in general and per sample',align = "r") %>% 
+  kable_classic(full_width = F, position = "left")
+                                              
+```
+
+### PLOTS
+
+To improve the interpretation of the compositional plots I will pretreat
+the data with three steps:
+
+1.  Filter taxa by average abundance (minimum 1 %) and rank (max 19
+    features + "Others")
+
+2.  Sort the plotted taxa by full phylogeny
+
+3.  Change taxa names in plot to a letter and include table of full
+    taxonomy
+
+Following this I will incorporate both time_var and subject_var in the
+plot
+
+```{r}
+# Filter by abundance, then rank
+phy.top <- filter_abundance(phy.rel, group = params$group_var,includes = "any") %>% filter_rank(group = params$time_var, min.rank = 6, includes = "any")
+
+#Melt data
+dat <- suppressWarnings(psmelt(phy.top))
+colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
+
+# Sort taxa
+dat.sort <- sort_taxa(dat) 
+
+# rename taxa
+levels(dat.sort$Taxa) <- LETTERS[seq(length(levels(dat.sort$Taxa)))]
+
+# ensure that the variables are factors
+dat.sort[,params$time_var] <- factor(dat.sort[,params$time_var])
+dat.sort[,params$subject_var] <- factor(dat.sort[,params$subject_var])
+dat.sort[,params$group_var] <- factor(dat.sort[,params$group_var])
+
+# Create plot
+p <- ggplot(dat.sort, aes(x = .data[[params$subject_var]],
+                          y = Abundance,
+                          fill = Taxa,
+                          color = Taxa)) +
+  geom_col() +
+  xlab("") + 
+  facet_grid(get(params$time_var) ~ get(params$group_var),
+             space = "free_x",scales = "free_x") +
+  ggsci::scale_color_d3(palette = "category20") + 
+  ggsci::scale_fill_d3(palette = "category20") + 
+  guides(fill=guide_legend(ncol=2), color=guide_legend(ncol=2)) +
+  clean_theme()
+p
+
+# print tax table
+# print tax table
+tax <- dat.sort %>% distinct(Taxa,.keep_all = T) %>% select(Taxa, Kingdom, Phylum, Class, Order,Family)
+
+kable(tax,digits = 2,caption = paste("Taxa plotted", sep = " ")) %>%
+  kable_classic(full_width = F, position = "left")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+## GENUS {.tabset .tabset-fade .tabset-pills}
+
+### COUNTS
+
+At genus level the microbiome counts are as follows for each group and
+timepoint
+
+```{r}
+# load data 
+load("R_objects/Agglomerated.RData")
+params <- readRDS( "R_objects/params_description")
+
+# Remove samples with missing data
+phy.use <- prune_samples(sample_names(phy.ge)[!is.na(sample_data(phy.ge)[,params$group_var]) & !is.na(sample_data(phy.ge)[,params$time_var])], phy.ge)
+
+# Transform data
+phy.rel <- transform_sample_counts(phy.use, fun = function(x) x/sum(x)*100)
+dat <- psmelt(phy.rel)
+
+# summarise per sample
+sumsample <- 
+  dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(Sample, .data[[params$group_var]], .data[[params$time_var]]) %>% 
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>%
+  pivot_longer(starts_with("pct"), 
+               names_to = c("Cutoff"), 
+               values_to = "Count") %>% 
+  group_by(Cutoff, .data[[params$group_var]], .data[[params$time_var]]) %>% 
+  summarise(mean = round(mean(Count),2), 
+            sd = round(sd(Count),2)) 
+  
+# summarise total
+sumall <- dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(OTU, .data[[params$group_var]], .data[[params$time_var]]) %>%
+  summarise(Abundance = mean(Abundance)) %>%
+  group_by(.data[[params$group_var]], .data[[params$time_var]]) %>%
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>%
+  pivot_longer(starts_with("pct"), 
+               names_to = c("Cutoff"), 
+               values_to = "n")
+
+# Combine
+output <- full_join(sumall, sumsample) %>% 
+  pivot_wider(id_cols = c(Cutoff, .data[[params$time_var]]), 
+              names_from = .data[[params$group_var]],
+              values_from = c(n, mean, sd), 
+              names_vary = "slowest") %>%
+  mutate(Cutoff=factor(Cutoff))
+
+
+levels(output$Cutoff) <- c("All", "n < 0.1%", "0.1% < n < 1.0%", "1.0% < n < 10%", "10%  < n")
+
+# Create output table
+kable(output, row.names = F,digits = 2, caption = 'Count of genera in general and per sample',align = "r") %>% 
+  kable_classic(full_width = F, position = "left")
+                                              
+```
+
+### PLOTS
+
+To improve the interpretation of the compositional plots I will pretreat
+the data with three steps:
+
+1.  Filter taxa by average abundance (minimum 1 %) and rank (max 19
+    features + "Others")
+
+2.  Sort the plotted taxa by full phylogeny
+
+3.  Change taxa names in plot to a letter and include table of full
+    taxonomy
+
+Following this I will incorporate both time_var and subject_var in the
+plot
+
+```{r}
+# Filter by abundance, then rank
+phy.top <- filter_abundance(phy.rel, group = params$group_var,includes = "any") %>% filter_rank(group = params$time_var, min.rank = 6, includes = "any")
+
+#Melt data
+dat <- suppressWarnings(psmelt(phy.top))
+colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
+
+# Sort taxa
+dat.sort <- sort_taxa(dat) 
+
+# rename taxa
+levels(dat.sort$Taxa) <- LETTERS[seq(length(levels(dat.sort$Taxa)))]
+
+# ensure that the variables are factors
+dat.sort[,params$time_var] <- factor(dat.sort[,params$time_var])
+dat.sort[,params$subject_var] <- factor(dat.sort[,params$subject_var])
+dat.sort[,params$group_var] <- factor(dat.sort[,params$group_var])
+
+# Create plot
+p <- ggplot(dat.sort, aes(x = .data[[params$subject_var]],
+                          y = Abundance,
+                          fill = Taxa,
+                          color = Taxa)) +
+  geom_col() +
+  xlab("") + 
+  facet_grid(get(params$time_var) ~ get(params$group_var),
+             space = "free_x",scales = "free_x") +
+  ggsci::scale_color_d3(palette = "category20") + 
+  ggsci::scale_fill_d3(palette = "category20") + 
+  guides(fill=guide_legend(ncol=2), color=guide_legend(ncol=2)) +
+  clean_theme()
+p
+
+# print tax table
+# print tax table
+tax <- dat.sort %>% distinct(Taxa,.keep_all = T) %>% select(Taxa, Kingdom, Phylum, Class, Order,Family,Genus)
+
+kable(tax,digits = 2,caption = paste("Taxa plotted", sep = " ")) %>%
+  kable_classic(full_width = F, position = "left")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+## SPECIES {.tabset .tabset-fade .tabset-pills}
+
+### COUNTS
+
+At species level the microbiome counts are as follows for each group and
+timepoint
+
+```{r}
+# load data 
+load("R_objects/Agglomerated.RData")
+params <- readRDS( "R_objects/params_description")
+
+# Remove samples with missing data
+phy.use <- prune_samples(sample_names(phy.sp)[!is.na(sample_data(phy.sp)[,params$group_var]) & !is.na(sample_data(phy.sp)[,params$time_var])], phy.sp)
+
+# Transform data
+phy.rel <- transform_sample_counts(phy.use, fun = function(x) x/sum(x)*100)
+dat <- psmelt(phy.rel)
+
+# summarise per sample
+sumsample <- 
+  dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(Sample, .data[[params$group_var]], .data[[params$time_var]]) %>% 
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>%
+  pivot_longer(starts_with("pct"), 
+               names_to = c("Cutoff"), 
+               values_to = "Count") %>% 
+  group_by(Cutoff, .data[[params$group_var]], .data[[params$time_var]]) %>% 
+  summarise(mean = round(mean(Count),2), 
+            sd = round(sd(Count),2)) 
+  
+# summarise total
+sumall <- dat %>% 
+  filter(Abundance > 0) %>% 
+  group_by(OTU, .data[[params$group_var]], .data[[params$time_var]]) %>%
+  summarise(Abundance = mean(Abundance)) %>%
+  group_by(.data[[params$group_var]], .data[[params$time_var]]) %>%
+  summarise(pct_0 = n(),
+            pct_0.1 = sum(Abundance < 0.1),
+            pct_0_1 = sum(Abundance >= 0.1 & Abundance < 1),
+            pct_1_10 = sum(Abundance >= 1 & Abundance < 10),
+            pct_10 = sum(Abundance > 10)) %>%
+  pivot_longer(starts_with("pct"), 
+               names_to = c("Cutoff"), 
+               values_to = "n")
+
+# Combine
+output <- full_join(sumall, sumsample) %>% 
+  pivot_wider(id_cols = c(Cutoff, .data[[params$time_var]]), 
+              names_from = .data[[params$group_var]],
+              values_from = c(n, mean, sd), 
+              names_vary = "slowest") %>%
+  mutate(Cutoff=factor(Cutoff))
+
+
+levels(output$Cutoff) <- c("All", "n < 0.1%", "0.1% < n < 1.0%", "1.0% < n < 10%", "10%  < n")
+
+# Create output table
+kable(output, row.names = F,digits = 2, caption = 'Count of species in general and per sample',align = "r") %>% 
+  kable_classic(full_width = F, position = "left")
+                                              
+```
+
+### PLOTS
+
+To improve the interpretation of the compositional plots I will pretreat
+the data with three steps:
+
+1.  Filter taxa by average abundance (minimum 1 %) and rank (max 19
+    features + "Others")
+
+2.  Sort the plotted taxa by full phylogeny
+
+3.  Change taxa names in plot to a letter and include table of full
+    taxonomy
+
+Following this I will incorporate both time_var and subject_var in the
+plot
+
+```{r}
+# Filter by abundance, then rank
+phy.top <- filter_abundance(phy.rel, group = params$group_var,includes = "any") %>% filter_rank(group = params$time_var, min.rank = 6, includes = "any")
+
+#Melt data
+dat <- suppressWarnings(psmelt(phy.top))
+colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
+
+# Sort taxa
+dat.sort <- sort_taxa(dat) 
+
+# rename taxa
+levels(dat.sort$Taxa) <- LETTERS[seq(length(levels(dat.sort$Taxa)))]
+
+# ensure that the variables are factors
+dat.sort[,params$time_var] <- factor(dat.sort[,params$time_var])
+dat.sort[,params$subject_var] <- factor(dat.sort[,params$subject_var])
+dat.sort[,params$group_var] <- factor(dat.sort[,params$group_var])
+
+# Create plot
+p <- ggplot(dat.sort, aes(x = .data[[params$subject_var]],
+                          y = Abundance,
+                          fill = Taxa,
+                          color = Taxa)) +
+  geom_col() +
+  xlab("") + 
+  facet_grid(get(params$time_var) ~ get(params$group_var),
+             space = "free_x",scales = "free_x") +
+  ggsci::scale_color_d3(palette = "category20") + 
+  ggsci::scale_fill_d3(palette = "category20") + 
+  guides(fill=guide_legend(ncol=2), color=guide_legend(ncol=2)) +
+  clean_theme()
+p
+
+# print tax table
+# print tax table
+tax <- dat.sort %>% distinct(Taxa,.keep_all = T) %>% select(Taxa, Kingdom, Phylum, Class, Order,Family,Genus,Species)
+
+kable(tax,digits = 2,caption = paste("Taxa plotted", sep = " ")) %>%
+  kable_classic(full_width = F, position = "left")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+# FINAL COMMENT
+
+This completes the microbiome description.
+
+To begin the statistical analysis of the data you are now ready for the
+following steps:
+
+| Analysis               | Template                   | Note                                                            |
+|------------|-----------------------|-------------------------------------|
+| Statistical testing    | GMH_test_variables         | Statistical test of sample_data variables, incl alpha diversity |
+| Beta diversity         | GMH_betadiversity          | Statistical test of beta diversity and visualization            |
+| Differential abundance | GMH_differential_abundance | Test differential abundance of taxa against sample variables    |
+
+# SETTINGS {.tabset .tabset-fade .tabset-pills}
+
+Overview of the parameters and packages that were used for this
+Rmarkdown.
+
+## PARAMETERS
+
+The following paramenters were set in for this analysis:
+
+```{r parameters, eval=TRUE}
+params <- readRDS( "R_objects/params_description")
+
+
+tmp <- unlist(params)
+dat <- data.frame(Parameter = names(tmp), Value = unname(tmp))
+
+
+kbl(dat, row.names = F) %>% kable_classic(lightable_options = "striped")
+
+```
+
+## SESSION INFO
+
+The analysis was run in the following environment:
+
+```{r packages, eval=TRUE}
+sessionInfo()
+```

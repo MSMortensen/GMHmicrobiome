@@ -10,8 +10,20 @@ License: GPL (>= 3) | file LICENSE
 Encoding: UTF-8
 LazyData: true
 Depends:
-    R (>= 4.1.0)
-Imports:
+    R (>= 4.1.0),
+    tidyverse
+biocViews:
+    decontam,
     phyloseq
+Imports:
+    DAtest,
+    ggpubr,
+    ggsci,
+    kableExtra,
+    phangorn,
+    rmdformats,
+    vegan
+Remotes:
+    Russel88/DAtest
 RoxygenNote: 7.2.3
 BugReports: https://github.com/MSMortensen/GMHmicrobiome/issues

@@ -1,0 +1,4 @@
+name: GMH_import
+description: >
+   A template for the import and QC of microbiome data
+create_dir: FALSE

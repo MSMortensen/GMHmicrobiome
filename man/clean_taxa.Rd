@@ -17,5 +17,5 @@ clean_taxa(pobject, tax_remove = "Phylum", verbose = TRUE)
 The provided \code{phyloseq} object with an updated tax_table() and poorly classified taxa removed
 }
 \description{
-Clean phyloseq tax table
+Removes taxa not classified to at least tax_remove level from a \code{phyloseq} object and replaces all NA values with the lowest available classification.
 }

@@ -1,6 +1,6 @@
 #' Calculate alpha diversity using multiple rarefaction
 #'
-#' @description
+#' @description Randomly rarefies a \code{phyloseq} object ntables times (default = 100), and calculate the mean an sd values for the desired metrics.
 #' @param pobject A \code{phyloseq} object.
 #' @param ntables Number or rarefactions to perform. Default 100
 #' @param depth Rarefaction depth at which the alpha diversity is calculated. Default 90 \% of the lowest sample depth
@@ -15,6 +15,7 @@
 calculate_alpha_diversity <- function(pobject, ntables=100, depth = round(min(sample_sums(pobject))*0.9), methods=c("Observed","Chao1","FaithPD","Shannon"), seedstart=500, verbose=FALSE) {
   require("vegan")
   loadNamespace("phyloseq")
+  if (grepl("FaithPD", methods)) require("picante")
 
   # remove samples below depth
   phy.use <- prune_samples(sample_sums(pobject) >= depth, pobject )
