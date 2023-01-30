@@ -12,16 +12,18 @@ LazyData: true
 Depends:
     R (>= 4.1.0),
     tidyverse
-biocViews:
-    decontam,
-    phyloseq
+biocViews: Microbiome
 Imports:
     DAtest,
+    decontam,
     ggpubr,
     ggsci,
     kableExtra,
     phangorn,
+    phyloseq,
+    rmarkdown,
     rmdformats,
+    shiny,
     vegan
 Remotes:
     Russel88/DAtest

@@ -9,19 +9,16 @@ output:
     code_folding: hide
     number_sections: false
 knit: (function(inputFile, encoding) { 
-    })
     rmarkdown::render(
         inputFile, encoding = encoding,
         output_dir = file.path(dirname(inputFile),"output"),
-        output_file = paste0("<PROJECT>_", Sys.Date(), "_description.html")) 
+        output_file = paste0("<PROJECT>_", Sys.Date(), "_description.html"))
+        })
 params:
     input: "R_objects/<PHYLOSEQ OBJECT>"
     group_var: "<GROUP VARIABLE>"
     subject_var: "<SUBJECT VARIABLE>"
     time_var: "<TIME VARIABLE>"
-editor_options: 
-  markdown: 
-    wrap: 72
 ---
 
 # INFO
@@ -413,7 +410,7 @@ output <- full_join(sumall, sumsample)
 output$Cutoff <- c("All", "n < 0.1%", "0.1% < n < 1.0%", "1.0% < n < 10%", "10%  < n")
 
 # Create output table
-kable(output, row.names = F,digits = 2, caption = 'Count of phyla in general and per sample',align = "r") %>% 
+kable(output, row.names = F,digits = 2, caption = 'Count of orders in general and per sample',align = "r") %>% 
   kable_classic(full_width = F, position = "left")
                                               
 ```
@@ -523,7 +520,7 @@ output <- full_join(sumall, sumsample)
 output$Cutoff <- c("All", "n < 0.1%", "0.1% < n < 1.0%", "1.0% < n < 10%", "10%  < n")
 
 # Create output table
-kable(output, row.names = F,digits = 2, caption = 'Count of phyla in general and per sample',align = "r") %>% 
+kable(output, row.names = F,digits = 2, caption = 'Count of families in general and per sample',align = "r") %>% 
   kable_classic(full_width = F, position = "left")
                                               
 ```
@@ -633,7 +630,7 @@ output <- full_join(sumall, sumsample)
 output$Cutoff <- c("All", "n < 0.1%", "0.1% < n < 1.0%", "1.0% < n < 10%", "10%  < n")
 
 # Create output table
-kable(output, row.names = F,digits = 2, caption = 'Count of phyla in general and per sample',align = "r") %>% 
+kable(output, row.names = F,digits = 2, caption = 'Count of genera in general and per sample',align = "r") %>% 
   kable_classic(full_width = F, position = "left")
                                               
 ```
@@ -743,7 +740,7 @@ output <- full_join(sumall, sumsample)
 output$Cutoff <- c("All", "n < 0.1%", "0.1% < n < 1.0%", "1.0% < n < 10%", "10%  < n")
 
 # Create output table
-kable(output, row.names = F,digits = 2, caption = 'Count of phyla in general and per sample',align = "r") %>% 
+kable(output, row.names = F,digits = 2, caption = 'Count of species in general and per sample',align = "r") %>% 
   kable_classic(full_width = F, position = "left")
                                               
 ```
