@@ -15,8 +15,10 @@ Depends:
 biocViews: Microbiome
 Imports:
     DAtest,
+    cowplot (>= 1.0.0),
     decontam,
     ggpubr,
+    ggExtra,
     ggsci,
     kableExtra,
     phangorn,
@@ -26,6 +28,7 @@ Imports:
     shiny,
     vegan
 Remotes:
-    Russel88/DAtest
+    Russel88/DAtest,
+    daattali/ggExtra
 RoxygenNote: 7.2.3
 BugReports: https://github.com/MSMortensen/GMHmicrobiome/issues

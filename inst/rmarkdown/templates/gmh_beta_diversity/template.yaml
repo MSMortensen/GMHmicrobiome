@@ -1,0 +1,4 @@
+name: GMH_beta_diversity
+description: >
+   A template for performing a beta diversity analysis
+create_dir: FALSE

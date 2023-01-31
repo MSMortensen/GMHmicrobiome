@@ -647,12 +647,12 @@ invisible(gc()) #free up memory and report the memory usage.
 
 This completes data import, initial cleaning, QC of the sequencing data, and calculation of alpha diversity. The data stored in "R_objects/Phyloseq.Rdata" and "R_objects/Phyloseq_harsh.Rdata". The phyloseq objects can now be used for further analysis in the templates for:
 
-    | Analysis                    | Template                  |
-    |-----------------------------|---------------------------|
-    | Microbiome description      | GMH_description
-    | Statistical testing         |  |
-    | Beta diversity              |  |
-    | Differential abundance      |  |
+| Analysis               | Template                   | Note                                                               |
+|------------------|---------------------|---------------------------------|
+| Microbiome description | GMH_description            | Statistical test of sample_data variables, incl alpha diversity    |
+| Statistical testing    | GMH_test_variables         | Statistical test and visualization of alpha diversity and metadata |
+| Beta diversity         | GMH_beta_diveristy         | Statistical test and visualization of beta diversity               |
+| Differential abundance | GMH_differential_abundance | Test differential abundance of taxa against sample variables       |
 
 # SETTINGS {.tabset .tabset-fade .tabset-pills}
 

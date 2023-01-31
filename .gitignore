@@ -3,3 +3,8 @@
 .RData
 .Ruserdata
 README.Rmd
+*.Rmd
+output/
+plots/
+R_objects/
+tables/

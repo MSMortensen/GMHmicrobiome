@@ -1,0 +1,4 @@
+name: GMH_test_variables
+description: >
+   A template for choosing and applying the correct statistical methods to test sample variables
+create_dir: FALSE

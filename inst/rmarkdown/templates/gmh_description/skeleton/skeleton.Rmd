@@ -41,7 +41,7 @@ library(kableExtra)
 library(phyloseq)
 
 # save parameters
-saveRDS(params, "R_objects/params_description")
+saveRDS(params, "R_objects/params_description.RDS")
 
 # clear the environment and release memory
 rm(list = ls(all.names = TRUE))
@@ -149,7 +149,7 @@ At phylum level the microbiome counts are as follows
 ```{r}
 # load data 
 load("R_objects/Agglomerated.RData")
-params <- readRDS( "R_objects/params_description")
+params <- readRDS("R_objects/params_description.RDS")
 
 # Transform data
 phy.rel <- transform_sample_counts(phy.ph, fun = function(x) x/sum(x)*100)
@@ -259,7 +259,7 @@ At class level the microbiome counts are as follows
 ```{r}
 # load data 
 load("R_objects/Agglomerated.RData")
-params <- readRDS( "R_objects/params_description")
+params <- readRDS("R_objects/params_description.RDS")
 
 # Transform data
 phy.rel <- transform_sample_counts(phy.cl, fun = function(x) x/sum(x)*100)
@@ -369,7 +369,7 @@ At order level the microbiome counts are as follows
 ```{r}
 # load data 
 load("R_objects/Agglomerated.RData")
-params <- readRDS( "R_objects/params_description")
+params <- readRDS("R_objects/params_description.RDS")
 
 # Transform data
 phy.rel <- transform_sample_counts(phy.or, fun = function(x) x/sum(x)*100)
@@ -479,7 +479,7 @@ At family level the microbiome counts are as follows
 ```{r}
 # load data 
 load("R_objects/Agglomerated.RData")
-params <- readRDS( "R_objects/params_description")
+params <- readRDS("R_objects/params_description.RDS")
 
 # Transform data
 phy.rel <- transform_sample_counts(phy.fa, fun = function(x) x/sum(x)*100)
@@ -589,7 +589,7 @@ At genus level the microbiome counts are as follows
 ```{r}
 # load data 
 load("R_objects/Agglomerated.RData")
-params <- readRDS( "R_objects/params_description")
+params <- readRDS("R_objects/params_description.RDS")
 
 # Transform data
 phy.rel <- transform_sample_counts(phy.ge, fun = function(x) x/sum(x)*100)
@@ -699,7 +699,7 @@ At species level the microbiome counts are as follows
 ```{r}
 # load data 
 load("R_objects/Agglomerated.RData")
-params <- readRDS( "R_objects/params_description")
+params <- readRDS("R_objects/params_description.RDS")
 
 # Transform data
 phy.rel <- transform_sample_counts(phy.sp, fun = function(x) x/sum(x)*100)
@@ -818,7 +818,7 @@ timepoint
 ```{r}
 # load data 
 load("R_objects/Agglomerated.RData")
-params <- readRDS( "R_objects/params_description")
+params <- readRDS("R_objects/params_description.RDS")
 
 # Remove samples with missing data
 phy.use <- prune_samples(sample_names(phy.ph)[!is.na(sample_data(phy.ph)[,params$group_var]) & !is.na(sample_data(phy.ph)[,params$time_var])], phy.ph)
@@ -950,7 +950,7 @@ timepoint
 ```{r}
 # load data 
 load("R_objects/Agglomerated.RData")
-params <- readRDS( "R_objects/params_description")
+params <- readRDS("R_objects/params_description.RDS")
 
 # Remove samples with missing data
 phy.use <- prune_samples(sample_names(phy.cl)[!is.na(sample_data(phy.cl)[,params$group_var]) & !is.na(sample_data(phy.cl)[,params$time_var])], phy.cl)
@@ -1081,7 +1081,7 @@ timepoint
 ```{r}
 # load data 
 load("R_objects/Agglomerated.RData")
-params <- readRDS( "R_objects/params_description")
+params <- readRDS("R_objects/params_description.RDS")
 
 # Remove samples with missing data
 phy.use <- prune_samples(sample_names(phy.or)[!is.na(sample_data(phy.or)[,params$group_var]) & !is.na(sample_data(phy.or)[,params$time_var])], phy.or)
@@ -1213,7 +1213,7 @@ timepoint
 ```{r}
 # load data 
 load("R_objects/Agglomerated.RData")
-params <- readRDS( "R_objects/params_description")
+params <- readRDS("R_objects/params_description.RDS")
 
 # Remove samples with missing data
 phy.use <- prune_samples(sample_names(phy.fa)[!is.na(sample_data(phy.fa)[,params$group_var]) & !is.na(sample_data(phy.fa)[,params$time_var])], phy.fa)
@@ -1344,7 +1344,7 @@ timepoint
 ```{r}
 # load data 
 load("R_objects/Agglomerated.RData")
-params <- readRDS( "R_objects/params_description")
+params <- readRDS("R_objects/params_description.RDS")
 
 # Remove samples with missing data
 phy.use <- prune_samples(sample_names(phy.ge)[!is.na(sample_data(phy.ge)[,params$group_var]) & !is.na(sample_data(phy.ge)[,params$time_var])], phy.ge)
@@ -1475,7 +1475,7 @@ timepoint
 ```{r}
 # load data 
 load("R_objects/Agglomerated.RData")
-params <- readRDS( "R_objects/params_description")
+params <- readRDS("R_objects/params_description.RDS")
 
 # Remove samples with missing data
 phy.use <- prune_samples(sample_names(phy.sp)[!is.na(sample_data(phy.sp)[,params$group_var]) & !is.na(sample_data(phy.sp)[,params$time_var])], phy.sp)
@@ -1603,11 +1603,11 @@ This completes the microbiome description.
 To begin the statistical analysis of the data you are now ready for the
 following steps:
 
-| Analysis               | Template                   | Note                                                            |
-|------------|-----------------------|-------------------------------------|
-| Statistical testing    | GMH_test_variables         | Statistical test of sample_data variables, incl alpha diversity |
-| Beta diversity         | GMH_betadiversity          | Statistical test of beta diversity and visualization            |
-| Differential abundance | GMH_differential_abundance | Test differential abundance of taxa against sample variables    |
+| Analysis               | Template                   | Note                                                               |
+|------------------|---------------------|---------------------------------|
+| Statistical testing    | GMH_test_variables         | Statistical test and visualization of alpha diversity and metadata |
+| Beta diversity         | GMH_beta_diveristy         | Statistical test and visualization of beta diversity               |
+| Differential abundance | GMH_differential_abundance | Test differential abundance of taxa against sample variables       |
 
 # SETTINGS {.tabset .tabset-fade .tabset-pills}
 
@@ -1619,7 +1619,7 @@ Rmarkdown.
 The following paramenters were set in for this analysis:
 
 ```{r parameters, eval=TRUE}
-params <- readRDS( "R_objects/params_description")
+params <- readRDS("R_objects/params_description.RDS")
 
 
 tmp <- unlist(params)
