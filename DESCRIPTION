@@ -21,11 +21,14 @@ Imports:
     ggExtra,
     ggsci,
     kableExtra,
+    pals,
     phangorn,
+    picante,
     phyloseq,
     rmarkdown,
     rmdformats,
     shiny,
+    skimr,
     vegan
 Remotes:
     Russel88/DAtest,

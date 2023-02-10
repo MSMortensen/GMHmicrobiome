@@ -8,7 +8,7 @@ calculate_alpha_diversity(
   pobject,
   ntables = 100,
   depth = round(min(sample_sums(pobject)) * 0.9),
-  methods = c("Observed", "Chao1", "FaithPD", "Shannon"),
+  INDECES = c("Observed", "Chao1", "FaithPD", "Shannon"),
   seedstart = 500,
   verbose = FALSE
 )
@@ -20,7 +20,7 @@ calculate_alpha_diversity(
 
 \item{depth}{Rarefaction depth at which the alpha diversity is calculated. Default 90 \% of the lowest sample depth}
 
-\item{methods}{Which alpha diversity metrics to calculate. Default c("Observed","Chao1","FaithPD","Shannon")}
+\item{INDECES}{Which alpha diversity metrics to calculate. Default c("Observed","Chao1","FaithPD","Shannon")}
 
 \item{seedstart}{Random seed to use. Default 500}
 
