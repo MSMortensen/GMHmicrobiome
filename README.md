@@ -40,7 +40,7 @@ finalised, but this will be updated when they are added.
   the samples. This does not include any statistical analysis.  
   *Output*: A structured .html document with all tables and plots.
 
-- **GMH_test_variables** (Not yet included)  
+- **GMH_test_variables** (Lacks visualization part)  
   *Input*: One phyloseq objects from **GMH_import.**  
   *Description*: Guide to identify and apply the correct statistical
   test differences and correlations between alpha diversity and project
@@ -48,7 +48,7 @@ finalised, but this will be updated when they are added.
   *Output*: Relevant plots and a structured .html document showing the
   statistical analyses.
 
-- **GMH_betadiversity** (Not yet included)  
+- **GMH_betadiversity**  
   *Input*: One phyloseq objects from **GMH_import.**  
   *Description*: Fundamental analysis of beta diversity, identifying
   differences between groups and correlations with quantitative
