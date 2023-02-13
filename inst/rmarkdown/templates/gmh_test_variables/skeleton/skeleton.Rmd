@@ -1,0 +1,1305 @@
+---
+title: "test Test variables"
+author: "Your Name"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::readthedown:
+    toc_depth: 4
+    collapsed: false
+    code_folding: hide
+    number_sections: false
+knit: (function(inputFile, encoding) { 
+    rmarkdown::render(
+        inputFile, encoding = encoding,
+        output_dir = file.path(dirname(inputFile),"output"),
+        output_file = paste0("test_", Sys.Date(), "_test_variables.html"))
+        })
+---
+
+# INFO {.tabset .tabset-fade .tabset-pills}
+
+## BACKGROUND
+
+This template is build to use the output from **GMH_import** as input. It will take you through a basic test of sample variables and alpha diversity for the project. Alpha diversity the difference wihtin each sample, this means that it is independent of the other samples in the project.
+
+> Faith phylogenetic diversity is the only exception. It is dependent on the phylogenetic tree of the project, but we will consider it indenpendent within the project.
+
+To perform the correct statistical analysis we will go through the following steps :
+
+1.  Identify the appropriate type of test for the predictor and outcome.
+
+2.  Test the data to determine the exact test to use, including whether batch effects should be considered.
+
+3.  Perform the statistical test.
+
+4.  Visualize the output in a plot.
+
+The theory and steps are adapted from: "[Choosing the Right Statistical Test \| Types & Examples (scribbr.com)](https://www.scribbr.com/statistics/statistical-tests/)" with the methods following the included recommendations.
+
+For each steps your choices will impact the interpretation of the output. This will be expanded in each section.
+
+## THEORY
+
+### **What does a statistical test do?**
+
+Statistical tests work by calculating a **test statistic** -- a number that describes how much the relationship between variables in your test differs from the null hypothesis of no relationship.
+
+It then calculates a **p-value** (probability value). The p-value estimates how likely it is that you would see the difference described by the test statistic if the null hypothesis of no relationship were true.
+
+If the value of the test statistic is more extreme than the statistic calculated from the null hypothesis, then you can infer a **statistically significant relationship** between the predictor and outcome variables.
+
+If the value of the test statistic is less extreme than the one calculated from the null hypothesis, then you can infer **no statistically significant relationship** between the predictor and outcome variables.
+
+### **When to perform a statistical test**
+
+You can perform statistical tests on data that have been collected in a statistically valid manner -- either through an experiment, or through observations made using probability sampling methods.
+
+For a statistical test to be valid, your sample size needs to be large enough to approximate the true distribution of the population being studied.
+
+To determine which statistical test to use, you need to know:
+
+-   whether your data meets certain assumptions.
+
+-   the types of variables that you're dealing with.
+
+### **Statistical assumptions**
+
+Statistical tests make some common assumptions about the data they are testing:
+
+1.  **Independence of observations** (a.k.a. no autocorrelation): The observations/variables you include in your test are not related (for example, multiple measurements of a single test subject are not independent, while measurements of multiple different test subjects are independent).
+
+2.  **Homogeneity of variance**: the variance within each group being compared is similar among all groups. If one group has much more variation than others, it will limit the test's effectiveness.
+
+3.  **Normality of data:** the data follows a normal distribution (a.k.a. a bell curve). This assumption applies only to quantitative data.
+
+If your data do not meet the assumptions of normality or homogeneity of variance, you may be able to perform a **nonparametric statistical test**, which allows you to make comparisons without any assumptions about the data distribution.
+
+If your data do not meet the assumption of independence of observations, you may be able to use a test that accounts for structure in your data (repeated-measures tests or tests that include blocking variables).
+
+### **Types of variables**
+
+The [types of variables](https://www.scribbr.com/methodology/types-of-variables/) you have usually determine what type of statistical test you can use.
+
+**Quantitative variables** represent amounts of things (e.g. the number of trees in a forest). Types of quantitative variables include:
+
+-   **Continuous** (a.k.a ratio variables): represent measures and can usually be divided into units smaller than one (e.g. 0.75 grams).
+
+-   **Discrete** (a.k.a integer variables): represent counts and usually can't be divided into units smaller than one (e.g. 1 tree).
+
+**Categorical variables** represent groupings of things (e.g. the different tree species in a forest). Types of categorical variables include:
+
+-   **Ordinal**: represent data with an order (e.g. rankings).
+
+-   **Nominal**: represent group names (e.g. brands or species names).
+
+-   **Binary**: represent data with a yes/no or 1/0 outcome (e.g. win or lose).
+
+Choose the test that fits the types of predictor and outcome variables you have collected. Consult the tables below to see which test best matches your variables.
+
+### **Choosing the right test** {.tabset .tabset-fade .tabset-pills}
+
+Parametric tests usually have stricter requirements than nonparametric tests, and are able to make stronger inferences from the data. They can only be conducted with data that adheres to the common assumptions of statistical tests.
+
+Use the flowchart to choose the best parametric test for your data, then test that your data fulfill the statistical assumptions. If your data does not fulfill the assumptions, then choose the appropriate non-parametric test. More information are listed in the tabs below.
+
+![flowchart for choosing a statistical test](https://cdn.scribbr.com/wp-content/uploads/2020/01/flowchart-for-choosing-a-statistical-test.png)\
+
+#### **Regression tests**
+
+Regression tests look for **cause-and-effect relationships**. They can be used to estimate the effect of one or more continuous variables on another variable.
+
++----------------------------------------------------------------------------------------------+--------------------------+------------------+----------------------------------------------------------------------------+
+|                                                                                              | Predictor variable       | Outcome variable | Research question example                                                  |
++:=============================================================================================+:========================:+:================:+:==========================================================================:+
+| [Simple linear regression](https://www.scribbr.com/statistics/simple-linear-regression/)     | -   Continuous           | -   Continuous   | What is the effect of income on longevity?                                 |
+|                                                                                              |                          |                  |                                                                            |
+|                                                                                              | -   1 predictor          | -   1 outcome    |                                                                            |
++----------------------------------------------------------------------------------------------+--------------------------+------------------+----------------------------------------------------------------------------+
+| [Multiple linear regression](https://www.scribbr.com/statistics/multiple-linear-regression/) | -   Continuous           | -   Continuous   | What is the effect of income and minutes of exercise per day on longevity? |
+|                                                                                              |                          |                  |                                                                            |
+|                                                                                              | -   2 or more predictors | -   1 outcome    |                                                                            |
++----------------------------------------------------------------------------------------------+--------------------------+------------------+----------------------------------------------------------------------------+
+| Logistic regression                                                                          | -   Continuous           | -   Binary       | What is the effect of drug dosage on the survival of a test subject?       |
++----------------------------------------------------------------------------------------------+--------------------------+------------------+----------------------------------------------------------------------------+
+
+#### **Comparison tests**
+
+Comparison tests look for **differences among group means**. They can be used to test the effect of a categorical variable on the [mean value](https://www.scribbr.com/statistics/mean/) of some other characteristic.
+
+[T-tests](https://www.scribbr.com/statistics/t-test/) are used when comparing the means of precisely two groups (e.g. the average heights of men and women). [ANOVA](https://www.scribbr.com/statistics/one-way-anova/) and MANOVA tests are used when comparing the means of more than two groups (e.g. the average heights of children, teenagers, and adults).
+
++--------------------+-------------------------+--------------------------------------------+---------------------------------------------------------------------------------------------------------------------+
+|                    | Predictor variable      | Outcome variable                           | Research question example                                                                                           |
++:===================+:=======================:+:==========================================:+:===================================================================================================================:+
+| Paired t-test      | -   Categorical         | -   Quantitative                           | What is the effect of two different test prep programs on the average exam scores for students from the same class? |
+|                    |                         |                                            |                                                                                                                     |
+|                    | -   1 predictor         | -   groups come from the same population   |                                                                                                                     |
++--------------------+-------------------------+--------------------------------------------+---------------------------------------------------------------------------------------------------------------------+
+| Independent t-test | -   Categorical         | -   Quantitative                           | What is the difference in average exam scores for students from two different schools?                              |
+|                    |                         |                                            |                                                                                                                     |
+|                    | -   1 predictor         | -   groups come from different populations |                                                                                                                     |
++--------------------+-------------------------+--------------------------------------------+---------------------------------------------------------------------------------------------------------------------+
+| ANOVA              | -   Categorical         | -   Quantitative                           | What is the difference in average pain levels among post-surgical patients given three different painkillers?       |
+|                    |                         |                                            |                                                                                                                     |
+|                    | -   1 or more predictor | -   1 outcome                              |                                                                                                                     |
++--------------------+-------------------------+--------------------------------------------+---------------------------------------------------------------------------------------------------------------------+
+| MANOVA             | -   Categorical         | -   Quantitative                           | What is the effect of flower species on petal length, petal width, and stem length?                                 |
+|                    |                         |                                            |                                                                                                                     |
+|                    | -   1 or more predictor | -   2 or more outcome                      |                                                                                                                     |
++--------------------+-------------------------+--------------------------------------------+---------------------------------------------------------------------------------------------------------------------+
+
+#### **Correlation tests**
+
+[Correlation tests](https://www.scribbr.com/statistics/correlation-coefficient/) **check whether variables are related** without hypothesizing a cause-and-effect relationship.
+
+These can be used to test whether two variables you want to use in (for example) a multiple regression test are autocorrelated.
+
++---------------+----------------------------+-------------------------------------------+
+|               | Variables                  | Research question example                 |
++:==============+:==========================:+:=========================================:+
+| Pearson's *r* | -   2 continuous variables | How are latitude and temperature related? |
++---------------+----------------------------+-------------------------------------------+
+
+#### **Nonparametric test alternatives**
+
+Non-parametric tests don't make as many assumptions about the data, and are useful when one or more of the common statistical assumptions are violated. However, the inferences they make aren't as strong as with parametric tests.
+
++---------------------------------+----------------------+--------------------------------------------+---------------------+
+|                                 | Predictor variable   | Outcome variable                           | Use in place of...  |
++:================================+:====================:+:==========================================:+:===================:+
+| Spearman's *ρ*                  | -   Quantitative     | -   Quantitative                           | Pearson's *r*       |
++---------------------------------+----------------------+--------------------------------------------+---------------------+
+| Chi square test of independence | -   Categorical      | -   Categorical                            | Pearson's *r*       |
++---------------------------------+----------------------+--------------------------------------------+---------------------+
+| Sign test                       | -   Categorical      | -   Quantitative                           | One-sample *t*-test |
++---------------------------------+----------------------+--------------------------------------------+---------------------+
+| Kruskal--Wallis *H*             | -   Categorical      | -   Quantitative                           | ANOVA               |
+|                                 |                      |                                            |                     |
+|                                 | -   3 or more groups |                                            |                     |
++---------------------------------+----------------------+--------------------------------------------+---------------------+
+| ANOSIM                          | -   Categorical      | -   Quantitative                           | MANOVA              |
+|                                 |                      |                                            |                     |
+|                                 | -   3 or more groups | -   2 or more outcome variables            |                     |
++---------------------------------+----------------------+--------------------------------------------+---------------------+
+| Wilcoxon Rank-Sum test          | -   Categorical      | -   Quantitative                           | Independent t-test  |
+|                                 |                      |                                            |                     |
+|                                 | -   2 groups         | -   groups come from different populations |                     |
++---------------------------------+----------------------+--------------------------------------------+---------------------+
+| Wilcoxon Signed-rank test       | -   Categorical      | -   Quantitative                           | Paired t-test       |
+|                                 |                      |                                            |                     |
+|                                 | -   2 groups         | -   groups come from the same population   |                     |
++---------------------------------+----------------------+--------------------------------------------+---------------------+
+
+# SETUP
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(GMHmicrobiome)
+library(ggpubr)
+library(kableExtra)
+library(phyloseq)
+library(rstatix)
+library(vegan)
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+## PROJECT
+
+PLEASE GIVE A SHORT PROJECT SUMMARY HERE (sample origin, goal, etc.)
+
+## VARIABLES
+
+PLEASE EXPLAIN THE USED VARIABLES HERE (subject, group, and time)
+
+# DATA
+
+To ensure the data is in the right format, this section will load, view, clean, and save the data for use throughout this template.
+
+## LOAD
+
+If continuing directly from **1_Import_QC.RData** data can be extracted directly from the phyloseq object of choice (first part of the code block) or imported from any external file using the import function (second part of the code block).
+
+> DELETE the option that you do not use.
+
+```{r load, eval=TRUE}
+
+##### FIRST PART
+# Load phyloseq metadata
+load("R_objects/Phyloseq_harsh.Rdata")
+
+# Extract sample data from phyloseq object
+dat <- as_tibble(sample_data(phy))
+
+##### SECOND PART
+# Load data from table using readr (File > Import Dataset > From Text (readr)...) and paste the code here
+dat <- read_delim("...", delim = "\t", escape_double = FALSE, trim_ws = TRUE)
+
+```
+
+## LOOK
+
+It is important to understand the structure and format of your data.
+
+```{r look, eval=TRUE}
+
+# Take a glimpse
+glimpse(dat)
+
+# Make a explorative summary 
+skimr::skim(dat)
+
+```
+
+## CLEAN
+
+If there are data that is poorly structured or wrongly formatted, it will be sorted here.
+
+This is the general principles to follow:
+
+-   Remove variables
+
+    -   With one unique value (e.g. sample_type, is_neg)
+
+    -   With duplicated information (e.g. keep one of sampleID and ID)
+
+    -   With irrelevant data (e.g. barcode)
+
+-   Change format
+
+    -   Numeric values as numbers `<dbl>` or integers `<int>.`
+
+    -   Unique strings as characters `<chr>`
+
+    -   Categorical data as factors `<fct>` (unordered, e.g. treatment groups)
+
+    -   Ordered categorical data as ordered `<ord>` (e.g. size: "small" \< "medium" \< "large")
+
+```{r clean, eval=TRUE}
+
+# confirm identical variables
+with(dat, table(Seq_run == run))
+
+# Confirm variables with same information
+with(dat, table(gr, treatment))
+
+
+# Remove
+out.var <- c("type", "sample_type", "is.neg", "sampleID","ID", "barcode","ASVs","primer", "random","run","mtrl_day","grday","typetreat","typegrday","gr", "Project","depth")
+
+dat <- dat %>% select(-one_of(out.var))
+
+
+# Create vectors of variables that should change type
+fac.vars <- c("Seq_run","rat_name", "material", "cage")
+num.vars <- c("rat_no")
+ord.vars <- c("day")
+
+# Change variables
+dat <- dat %>% mutate_at(.vars = fac.vars, factor)
+dat <- dat %>% mutate_at(.vars = num.vars, as.numeric)
+
+# For ordered factors I suggest to do them individually
+dat <- dat %>% mutate(day = factor(day, levels = c("d0","d2","d4","d8"),ordered = TRUE))
+
+# Look at cleaned data
+skimr::skim(dat)
+
+```
+
+## SAVE
+
+The cleaned data is here saved in one file that can be loaded when necessary in this template. If you need subsets for the analysis I suggest to create and save those here as well
+
+```{r save, eval=TRUE}
+
+# Save cleaned data
+save(dat, file = "R_objects/stat_test_data.RData")
+
+# create subset and save
+dat <- dat %>% filter(material == "Feces") %>% mutate(across(where(is.factor), droplevels))
+save(dat, file = "R_objects/stat_test_feces.RData")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE)[ls(all.names = TRUE) != "params"])
+invisible(gc())
+
+```
+
+# TEST ASSUMPTIONS
+
+This sections determines the Independence of observations, Normality of data, Homogeneity of variance, and potential batch effects. It is importance to keep in mind that while the independence of variance is valid for the whole dataset, for the latter two assumptions the test should be done on grouped data.
+
+## INDEPENDENCE
+
+First we have to ensure that the variables we are testing are independent of each other.
+
+> If any correlations are significant, both variables cannot be included in the same test
+
+#### CATEGORICAL VARIABLES
+
+Categorical variables should be compared using **Chi squared test of independence**.
+
+```{r assumption-independene-categorical, eval = TRUE}
+
+# load data 
+load("R_objects/stat_test_feces.RData")
+
+# This converts all character columns to factor (if only specific columns should be converted replace "where(is_character)" with "c(<col1>,<col2>,...)"
+dat <- dat %>% mutate(across(where(is_character), as_factor))
+
+
+# Create vector of categorical variables
+cat_var <- dat %>% 
+  select_if(is.factor) %>% 
+  select(where(~n_distinct(.) > 1)) %>% 
+  select(where(~n_distinct(.) < (nrow(dat)/2))) %>%
+  colnames()
+
+length(cat_var) # If less than 2 variables the following code should not be run
+
+# Test the variables pairwise 
+cat_var %>% 
+  combn(2) %>% 
+  t() %>% 
+  as_tibble() %>% 
+  rowwise %>% 
+  mutate(chisq_test = list(
+    table(dat[[V1]], dat[[V2]]) %>% chisq.test()
+    ),
+    chisq_pval = chisq_test$p.value
+    )
+
+```
+
+#### QUANTITATIVE VARIABLES
+
+Quantitative variables should first be tested to see if it follows a normal distribution, followed by a parametric (**Pearson's r**) or nonparametric (**Spearman's r**) test. Here we will run a Spearman's test as we have yet to determine the normality of the data
+
+```{r assumption-independence-numerical, eval = TRUE}
+# create vector with the relevant variables 
+CON.VARS <- dat %>% select(where(is.numeric)) %>% colnames()
+
+# Plot all variables against each other
+pairs(dat[,CON.VARS[1:25]], pch = 19,  cex = 0.5,
+      lower.panel=NULL)
+
+# Run Spearman test
+corrmat <- cor(dat[,CON.VARS], method = "spearman", use = "pairwise.complete.obs")
+
+# Create heatmap
+corrmat_rounded <- round(corrmat, 2)
+
+melted_corrmat_rounded <- tibble(Var1 = rep(row.names(corrmat_rounded), length(row.names(corrmat_rounded))),
+                                 Var2 = rep(row.names(corrmat_rounded), each = length(row.names(corrmat_rounded))),
+                                 dist = as.numeric(matrix(corrmat_rounded)))
+
+ggplot(melted_corrmat_rounded, aes(x = Var1, y = Var2, fill = dist)) + 
+  labs(title = "Correlation between continous variables") + 
+  geom_tile(color = "white") + 
+  scale_fill_gradient2(low = "blue", mid = "white", 
+                       high = "red", midpoint = 0, limit = c(-1,1), 
+                       space = "Lab", name = "Correlation coefficient") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, size = 12, 
+                                   hjust = 1, vjust = 1), 
+        axis.text.y = element_text(size = 12, hjust = 1, vjust = 0.5),
+        axis.title.x = element_blank(), axis.title.y = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.border = element_blank(),
+        panel.background = element_blank(),
+        axis.ticks = element_blank()) + 
+  geom_text(aes(x = Var1, y = Var2, label = dist), 
+            color = "black", size = 4) + 
+  coord_fixed()
+
+# The significance of any correlations can the be tested individually
+cor_test(data = dat, vars = any_of(c("Observed","FaithPD", "Shannon", "Chao1")))
+
+with(dat, cor.test(Chao1,Observed, method = "spearman", use = "complete.obs"))
+with(dat, cor.test(Chao1,DNA_Conc, method = "spearman", use = "complete.obs"))
+
+```
+
+## NORMALITY OF DATA
+
+This section draws heavily on the free statistical course [**STATISTICAL TESTS AND ASSUMPTIONS**](https://www.datanovia.com/en/courses/statistical-tests-and-assumptions/).
+
+An important factor in selecting the correct statistical test is to determine if your data follows a normal distribution (the normality of the data). This section takes you through how to check the normality of a data using Shapiro-Wilk test and visual inspection of QQ-plots.
+
+> If your sample size is greater than 50, the normal QQ plot is preferred because at larger sample sizes the Shapiro-Wilk test becomes very sensitive even to a minor deviation from normality.
+
+Consequently, we should not rely on only one approach for assessing the normality. A better strategy is to combine visual inspection and statistical test.
+
+> Normality test should be done for each variable with grouping included. The code chunk below tests for up to three variables. To use for two, overlap facet and color var and to use with one, remove the faceting lines (just a variable in Shapiro-Wilk test)
+
+```{r assumption-normality, eval = TRUE,warning=FALSE}
+# Set variables to test
+VAR = "Observed"
+COLOR = "treatment"
+FACET.VARS = c("van","day") 
+
+# Q-Q plot
+qq.plot <- ggqqplot(dat, 
+                    x = VAR, 
+                    facet.by = FACET.VARS,
+                    color = COLOR,
+                    palette = "jco",
+                    legend = "bottom")
+
+# Normal distribution
+norm.plot <- ggdensity(dat,
+                       x = VAR,
+                       facet.by = FACET.VARS,
+                       color = COLOR,
+                       palette = "jco",
+                       legend = "bottom",
+                       add = "mean") + 
+    stat_overlay_normal_density(color = "red", linetype = "dashed")
+
+# Create common plot
+ggarrange(norm.plot, qq.plot, common.legend = TRUE,legend = "bottom",ncol = 1)
+
+# Run Shapiro-Wilk test
+dat %>% 
+  group_by(.dots = c(COLOR,FACET.VARS)) %>%
+  shapiro_test(vars = VAR)
+
+```
+
+## HOMOSCEDASTICITY
+
+Homoscedasticity (homogeneity of variance) is when the variance in the data is stable between groups, or in relationship to a quantitative variable. Most statistical test leans on the assumption that the variance in similar between groups or along a variable. If one group has much more variation than others (heteroscedasticity), it will limit the test's effectiveness.
+
+There are different variance tests that can be used to assess the equality of variances. These include:
+
+-   **F-test**: Compare the variances of two groups. The data must be normally distributed.
+
+-   **Bartlett's test**: Compare the variances of two or more groups. The data must be normally distributed.
+
+-   **Levene's test**: A robust alternative to the Bartlett's test that is less sensitive to departures from normality.
+
+-   **Fligner-Killeen's test**: a non-parametric test which is very robust against departures from normality.
+
+This template will include all, but **F-test** and **Bartlett's test** can only be used if the above test showed normally distributed data.
+
+I recommend using **Levene's test** as a first choice and **Filgner-Killeen's test** if data is far from normally distributed.
+
+This chunk sets the variables
+
+```{r assumption-homogeneity-input, eval = TRUE}
+
+VAR = "Observed"
+GROUP = c("treatment","day", "pfos", "van")
+
+```
+
+> I suggest running the following individually for each combination of predictor/outcome
+
+```{r assumption-homogeneity-F-test, eval=TRUE}
+if (length(GROUP) == 1) {
+  FORMULA <- as.formula(paste(VAR,"pfos", sep = " ~ "))
+  var.test(FORMULA, data = dat)
+} else {
+  tibble(variable = VAR,group = GROUP) %>% 
+    rowwise %>% 
+    mutate(group_unique = n_distinct(dat[[group]]),
+           formula = ifelse(group_unique == 2,
+                            paste(variable,group, sep = " ~ "),
+                            "Group does not have 2 levels"),
+           F_test = ifelse(group_unique == 2,
+                            list(fligner.test(x = dat[[variable]], g = dat[[group]])),
+                            list(NA)),
+           F_test_pval = ifelse(group_unique == 2,
+                                 F_test$p.value,
+                                 as.numeric(NA))
+      )
+}
+
+```
+
+```{r assumption-homogeneity-bartletts, eval=TRUE}
+
+# Prepare formula
+if (length(GROUP) == 1) {
+  FORMULA <- as.formula(paste(VAR,"treatment", sep = " ~ "))
+} else FORMULA <- as.formula(paste(VAR,paste0("interaction(",paste(GROUP, collapse = ","),")"), sep = " ~ "))
+
+# Run test
+bartlett.test(FORMULA, data = dat)
+
+```
+
+```{r assumption-homogeneity-levene, eval=TRUE}
+ 
+# Prepare formula
+GROUP.F <- ifelse(length(GROUP) > 1, paste(GROUP, collapse = "*"), GROUP)
+FORMULA <- as.formula(paste(VAR,GROUP.F, sep = " ~ "))
+
+# Run test
+dat %>% levene_test(FORMULA)
+```
+
+```{r assumption-homogeneity-filgner-killeen, eval=TRUE}
+
+if (length(GROUP) == 1) {
+  FORMULA <- as.formula(paste(VAR,"treatment", sep = " ~ "))
+  fligner.test(FORMULA, data = dat)
+} else {
+  tibble(variable = VAR,group = GROUP) %>% 
+    rowwise %>% 
+    mutate(fligner_test = list(
+      fligner.test(x = dat[[variable]], g = dat[[group]])
+      ),
+      fligner_pval = fligner_test$p.value
+      )
+}
+```
+
+> A significant p-value means that the variance in NOT homogeneous between groups.
+
+# PERFORM TEST
+
+This sections contains code blocks for each of the included tests, run the relevant one(s).
+
+## REGRESSION TESTS
+
+When the predictor analysed is quantitative you should use a form of regression test to analyse the data
+
+### LOGISTIC REGRESSION
+
+When the outcome variable is categorical we use logistic regression.
+
+This could be to answer a question such as: *What is the effect of drug dosage on the survival of a test subject?*
+
+While there is no requirements to linearity, normality, or homoscedasticity, there are some assumptions that should be met:
+
+1.  Outcome must be binary
+
+2.  Observations must be independent (no repeated measurements)
+
+3.  Little or no multicollinearity (variables should not be correlated)
+
+4.  Large sample size (at least 10 cases \* n(variables) / lowest frequency outcome)
+
+#### LOAD DATA
+
+```{r}
+# load data 
+load("R_objects/stat_test_feces.RData")
+```
+
+#### SIMPLE
+
+First we begin with a simple logistic regression, with one quantitative predictor and a binomial outcome
+
+```{r test-regression-logistic-simple, eval = TRUE}
+# Create test variables
+predictor <- "Shannon"
+outcome <- "van"
+
+# If necessary filter data
+dat.clean <- dat %>% filter(day == "d2") %>% select_if(~ !any(is.na(.)))
+
+# Create formula
+FORMULA <- as.formula(paste(outcome,predictor, sep = " ~ "))
+
+# Fit the model
+model <- glm(FORMULA, data = dat.clean, family = binomial)
+
+# Summarize the model
+summary(model)$coef
+
+dat %>% 
+  filter(day == "d2") %>%
+  mutate(prob = ifelse(van == "van", 1, 0)) %>%
+  ggplot(aes(Shannon, prob)) +
+  geom_point(alpha = 0.2) +
+  geom_smooth(method = "glm", method.args = list(family = "binomial")) +
+  labs(
+    title = "Logistic Regression Model", 
+    x = "Observed richness",
+    y = "Probability of receiving Vancomycin"
+    )
+
+# Predict
+predict_van <- predict(model,
+                       dat %>% filter(day == "d4") %>% select_if(~ !any(is.na(.))),
+                       type = "response")
+predict_van <- ifelse(predict_van >0.5, 1, 0)
+with(dat %>% filter(day == "d4") %>% select_if(~ !any(is.na(.))), table(van, predict_van))
+
+```
+
+#### MULTIPLE
+
+If we have several quantitative predictor and a binomial outcome, we use multiple logistic regression.
+
+```{r test-regression-logistic-multiple, eval = TRUE}
+# Create test variables
+outcome <- "pfos"
+
+# If necessary filter data
+dat.clean <- dat %>% filter(day == "d8") %>% select(pfos, fecesG, PFOS_serum8_ug, PFOS_liver_mg, acetic, bw, liver_w, Shannon)
+
+# Create formula
+FORMULA <- as.formula(paste(outcome,".", sep = " ~ "))
+
+# Include all numeric variables
+model.all <- glm(FORMULA,
+                 data = dat.clean,
+                 family = binomial)
+
+# Extract all significant variables
+keep.vars <- summary(model.all)$coef %>% data.frame() %>% filter(Pr...z.. < 0.05) %>% row.names
+
+# Create formula
+FORMULA <- as.formula(paste(outcome,paste(keep.vars, collapse = " + "), sep = " ~ "))
+
+# Fit the model
+model <- glm(FORMULA, data = dat, family = binomial)
+
+# Summarize the model
+summary(model)$coef
+
+```
+
+### SIMPLE AND MULTIPLE REGRESSION
+
+Simple regression are used when both the predictor and outcome variables are quantitative.
+
+This could be to answer a question such as: *What is the effect of income on longevity?*
+
+Multiple regression are used when both the predictor and multiple outcome variables are quantitative.
+
+This could be to answer a question such as: *What is the effect of income and minutes of exercise per day on longevity?*
+
+In addition to the general assumptions (normality, homoscedasticity, and independence), it is assumed that the relationship between the independent and dependent variable is linear: the line of best fit through the data points is a straight line (rather than a curve or some sort of grouping factor). For multiple regression it is also important that the variables included are independent.
+
+```{r test-regression-simple-multiple}
+# Set variables
+predictor <- c("fecesG", "bw", "dnaC") 
+outcome <- "Observed"
+
+# Filter data if necessary
+dat.clean <- dat %>% filter(day < "d4")
+
+# set formula
+if (length(predictor) ==1 ) {
+  FORMULA <- as.formula(paste(outcome,predictor, sep = " ~ "))
+} else {
+  FORMULA <- as.formula(paste(outcome,paste(predictor, collapse = " + "), sep = " ~ "))
+}
+
+
+# Check linearity
+plot(FORMULA, data = dat.clean)
+
+# Run regression test
+model <- lm(FORMULA, data = dat.clean)
+
+# View model
+summary(model)
+
+# Check for homoscedasticity
+par(mfrow=c(2,2))
+plot(model)
+par(mfrow=c(1,1))
+
+```
+
+The Coefficients section shows:
+
+1.  The estimates (`Estimate`) for the model parameters -- the value of the y-intercept and the estimated effect of `predictor` on `outcome`.
+
+2.  The standard error of the estimated values (`Std. Error`).
+
+3.  The test statistic (`t value`, in this case the t statistic).
+
+4.  The p value ( `Pr(>| t | )` ), aka the probability of finding the given t statistic if the null hypothesis of no relationship were true.
+
+The final three lines are model diagnostics.
+
+## COMPARISON TEST
+
+Comparison tests look for **differences among group means**. They can be used to test the effect of a categorical variable on the mean value of some other characteristic.
+
+> To use the test the data must fit the standard assumptions of normality, and homoscedasticity.
+
+### LOAD DATA
+
+```{r}
+# load data 
+load("R_objects/stat_test_feces.RData")
+```
+
+### *T* TEST
+
+*T* tests are used when comparing the means of precisely two groups (e.g. the average heights of men and women). There are three individual forms of *t* tests:
+
+-   If the groups come from a single population, use a **paired *t* test**. This is a within-subjects design.\
+    (*What is the effect of two different test prep programs on the average exam scores for students from the same class?*)
+
+-   If the groups come from two different populations, use a two-sample *t* test (a.k.a. **independent *t*** **test**). This is a between-subjects design.\
+    (*What is the difference in average exam scores for students from two different schools?*)
+
+-   If there is one group being compared against a standard value, use a **one-sample *t* test**.\
+    (*Is this solution more acidic than water?*)
+
+The test can be performed as one- or two-tailed, where the first is used to determine if one group is larger or smaller, while the latter determines if they are different from each other.
+
+```{r test-comparison-t-test}
+# Set variables
+predictor <- "van" 
+outcome <- "Observed"
+
+# Filter data if necessary
+dat.clean <- dat %>% filter(day == "d8")
+
+# set formula
+FORMULA <- as.formula(paste(outcome,predictor, sep = " ~ "))
+
+# Run t test
+t.test(FORMULA, 
+       data = dat.clean,
+       paired = FALSE,
+       alternative = "two.sided")
+
+```
+
+The output provides:
+
+1.  An explanation of what is being compared, called `data` in the output table.
+
+2.  The `t value`. In most cases, we only care about the absolute value of the difference, or the distance from 0. It doesn't matter which direction.
+
+3.  The `degrees of freedom`. Degrees of freedom is related to your sample size, and shows how many 'free' data points are available in your test for making comparisons. The greater the degrees of freedom, the better your statistical test will work.
+
+4.  The `p value`. This describes the probability that you would see a *t* value as large as this one by chance.
+
+5.  A statement of the `alternative hypothesis` (Ha). In a two sided test, the Ha is that the difference is not 0.
+
+6.  The 95% `confidence interval`. This is the range of numbers within which the true difference in means will be 95% of the time. This can be changed from 95% if you want a larger or smaller interval, but 95% is very commonly used.
+
+7.  The `mean` outcome for each group.
+
+#### NON-METRIC ALTERNATIVE
+
+To compare the mean of two groups, where the data does not fit the *t* test assumptions, we can use one of the Wilcoxon tests. If the measurements are independent we use a **Wilcoxon Rank-sum test** and if they are paired we use a **Wilcoxon singed rank test**.
+
+```{r test-comparison-wilcoxon-test}
+# Set variables
+predictor <- "day" 
+outcome <- "Observed" 
+subject <- "rat_name" # Relevant in paired test
+
+# Filter data if necessary
+dat.clean <- dat %>% filter(day > "d2", van == "ctrl") %>% droplevels()
+
+# set formula
+FORMULA <- as.formula(paste(outcome,predictor, sep = " ~ "))
+
+# order the data by the subject (only relevant if running paired test)
+dat.clean <- dat.clean %>% arrange(subject)
+
+# Run Wilcoxon test
+wilcox.test(FORMULA,
+            data = dat.clean,
+            paired = TRUE,
+            alternative = "two.sided")
+
+```
+
+The output provides:
+
+1.  An explanation of what is being compared, called `data` in the output table.
+
+2.  The test statistic (`W` when independent and `V` when paired test)
+
+    1.  `W` is the number of times the value in the second group is lower than the first.
+
+    2.  `V` corresponds to the sum of ranks assigned to the differences with positive sign.
+
+3.  The `p value`. This describes the probability that you would see a *t* value as large as this one by chance.
+
+4.  A statement of the `alternative hypothesis` (Ha). In a two sided test, the Ha is that the difference is not 0.
+
+### ANOVA
+
+Analysis of Variance (ANOVA) is a statistical test used to analyze the difference between the means of more than two groups. A **one-way ANOVA** uses one independent variable, while a **two-way ANOVA** uses two independent variables. Further complexity, like interaction between variables or additional variables can also be included.
+
+The idea is to create a model for each option and then calculate the [Akaike information criterion](https://www.scribbr.com/statistics/akaike-information-criterion/) (AIC) for each model. AIC calculates the information value of each model by balancing the variation explained against the number of parameters used.
+
+> To use the test the data must fit the standard assumptions of independence, normality, and homoscedasticity.
+
+In R we can split the analysis into the following steps:
+
+1.  Build models
+
+2.  Find best-fit model
+
+3.  Check for homoscedasticity
+
+4.  Do post-hoc test
+
+#### BUILD MODELS
+
+For each of these models the model must be updated manually. Additional models can be included if necessary.
+
+To view how well the model fit the data we use the command `summary()`. The model summary first lists the independent variables being tested in the model and the model residuals ('Residual'). All of the variation that is not explained by the independent variables is called residual variance.
+
+The rest of the values in the output table describe the independent variable and the residuals:
+
+-   The `Df` column displays the **degrees of freedom** for the independent variable (the number of levels in the variable minus 1), and the degrees of freedom for the residuals (the total number of observations minus one and minus the number of levels in the independent variables).
+
+-   The `Sum Sq` column displays the **sum of squares** (a.k.a. the total variation between the group means and the overall mean).
+
+-   The `Mean Sq` column is the **mean of the sum of squares,** calculated by dividing the sum of squares by the degrees of freedom for each parameter.
+
+-   The `F value` column is the **test statistic** from the *F* test. This is the mean square of each independent variable divided by the mean square of the residuals. The larger the *F* value, the more likely it is that the variation caused by the independent variable is real and not due to chance.
+
+-   The `Pr(>F)` column is the ***p*** **value** of the *F* statistic. This shows how likely it is that the *F* value calculated from the test would have occurred if the null hypothesis of no difference among group means were true.
+
+**One way**
+
+This includes one variable.
+
+```{r test-comparison-anova-one}
+
+# Create model
+one.way <- aov(FaithPD ~ van, data = dat[dat$day == "d8",])
+
+# look at significance
+summary(one.way)
+```
+
+**Two way**
+
+This model includes two variables.
+
+```{r test-comparison-anova-two}
+
+# Create model
+two.way <- aov(FaithPD ~ van + pfos , data = dat[dat$day == "d8",])
+
+# Summary
+summary(two.way)
+```
+
+**Interaction**
+
+We van use `:` to include the interaction between two variables in the model.
+
+```{r test-comparison-anova-interaction}
+
+# Create model
+interaction <- aov(FaithPD ~ van + pfos + van:pfos, data = dat[dat$day == "d8",])
+
+# Summary
+summary(interaction)
+```
+
+**Blocking**
+
+Extra variables can be added, this could be a batch variabls to determine if there is a batch effect.
+
+```{r test-comparison-anova-blocking}
+
+# Create model
+blocking <- aov(FaithPD ~ van * pfos + treatment, data = dat[dat$day == "d8",])
+
+# Summary
+summary(blocking)
+```
+
+**Complex formula operator**
+
+There can be cases where we need to perform tests that are specific, but complex, here we can use other symbols than just `+` and `:` to connect our variables: In addition to + and :, a number of other operators are useful in model formulae.
+
+-   The `*` operator denotes factor crossing: a\*b is interpreted as `a + b + a:b`.
+
+-   The `^` operator indicates crossing to the specified degree. For example `(a+b+c)^2` is identical to `(a+b+c)*(a+b+c)` which in turn expands to a formula containing the main effects for a, b and c together with their second-order interactions.
+
+-   The `%in%` operator indicates that the terms on its left are nested within those on the right. For example `a + b %in% a` expands to the formula `a + a:b`.
+
+-   The `/` operator provides a shorthand, so that `a / b` is equivalent to `a + b %in% a`.
+
+-   The `-` operator removes the specified terms, hence `(a+b+c)^2 - a:b` is identical to `a + b + c + b:c + a:c`. It can also used to remove the intercept term: when fitting a linear model `y ~ x - 1` specifies a line through the origin. A model with no intercept can be also specified as `y ~ x + 0 or y ~ 0 + x`.
+
+**Repeated measures**
+
+When we look at data with repeated measures, (multiple measurements from the same individual, we have to include an `Error()` term identifying the subject. This model cannot be compared to the above models, as the input data is different. Instead an `Error()` term should be added to all models above.
+
+```{r test-comparison-anova-blocking}
+
+# Create model
+repeated <- aov(FaithPD ~ day*van + Error(rat_name), data = dat)
+
+# Summary
+summary(repeated)
+```
+
+The important output is then in the second part where we see the significance of the model variables within each subject.
+
+#### FIND BEST FIT MODEL
+
+For this, we will use the `aictab()` function from the **AICcmodavg** package. This package is not installed as standard part of the pipeline, so it will be installed here if needed.
+
+```{r test-comparison-anova-AIC}
+
+# Install library
+if (!requireNamespace("AICcmodavg")) install.packages("AICcmodavg")
+
+# Create list of  models and their names
+model.set <- list(one.way, two.way, interaction)
+model.names <- c("one.way", "two.way", "interaction")
+
+AICcmodavg::aictab(model.set, modnames = model.names)
+
+
+```
+
+> The model with the lowest AIC score (listed first in the table) is the best fit for the data
+
+#### CHECK FOR HOMOSCEDASTICITY
+
+As we have just decided on the best test, we will now test the homoscedasticity for that model
+
+```{r test-comparison-anova-homoscedasticity}
+
+par(mfrow=c(2,2))
+plot(two.way)
+par(mfrow=c(1,1))
+```
+
+The diagnostic plots show the unexplained variance (residuals) across the range of the observed data.
+
+Each plot gives a specific piece of information about the model fit, but it's enough to know that the red line representing the mean of the residuals should be horizontal and centered on zero (or on one, in the scale-location plot), meaning that there are no large outliers that would cause research bias in the model.
+
+The normal Q-Q plot plots a regression between the theoretical residuals of a perfectly-homoscedastic model and the actual residuals of your model, so the closer to a slope of 1 this is the better. This Q-Q plot is very close, with only a bit of deviation.
+
+From these diagnostic plots we can say that the model fits the assumption of homoscedasticity.
+
+> If your model doesn't fit the assumption of homoscedasticity, you can try the Kruskall-Wallis test instead.
+
+#### DO POST-HOC TEST
+
+ANOVA tells us if there are differences among group means, but not what the differences are. To find out which groups are statistically different from one another, you can perform a Tukey's Honestly Significant Difference (Tukey's HSD) post-hoc test for pairwise comparisons:
+
+```{r test-comparison-anova-tukeyhsd}
+
+TukeyHSD(interaction)
+```
+
+#### NON-METRIC ALTERNATIVE
+
+If the data does not fulfill the assumptions for an ANOVA test, we can use a non-parametric Kruskal-Wallis *H* test instead. The test is limited to `response ~ group`, so it can only replace a one.way anova
+
+```{r test-comparison-kruskal}
+# Run test
+kruskal.test(FaithPD ~ treatment, data = dat[dat$day == "d8",])
+
+```
+
+If the results is significant, we know that there is a difference between the groups, but not which differ. It's possible to use the function `pairwise.wilcox.test()` to calculate pairwise comparisons between group levels with corrections for multiple testing.
+
+```{r test-comparison-pairwise-wilcoxon}
+# create a subset if needed
+dat.used <- dat[dat$day == "d8",]
+
+# run test
+pairwise.wilcox.test(dat.used$FaithPD, dat.used$treatment, p.adjust.method = "fdr")
+
+```
+
+### MANOVA
+
+In the situation where there multiple response variables you can test them simultaneously using a **multivariate analysis of variance** (MANOVA).
+
+For example, we may conduct an experiment where we give two treatments (A and B) to two groups of mice, and we measure several outcomes (weight, height, liver weight, cecum, alpha diveristy, e.t.c.). In that case, the measured variables of mice are dependent variables, and our hypothesis is that all together are affected by the difference in treatment. A multivariate analysis of variance could be used to test this hypothesis.
+
+To use a MANOVA the data must fulfill the assumptions of normality and homoscedasticity, as well as linearity between all paired combinations of dependent variables and covariates.
+
+> If some dependent variables does not fulfill the assumptions, exclude them or use the non-parametric alternative (ANOSIM)
+
+```{r test-comparison-manova}
+# create a subset if needed
+dat.used <- dat[dat$day == "d8",]
+
+# run test
+res.man <- manova(cbind(PFOS_serum8_ug,bw, PFOS_liver_mg, propanoic, liver_w, cecum_w, Observed) ~ pfos + van, data = dat.used)
+
+# look at results
+summary(res.man)
+
+```
+
+The output includes the test statistic (default: Pillai-Bartlett), and the **p-value** (`Pr(>F)`).
+
+If the p-value is significant, we can see which of the dependent variables are significantly associated with each of the response variables.
+
+```{r test-comparison-manova-summary}
+# Look to see which differ
+summary.aov(res.man)
+
+```
+
+> The output is an ANOVA output table for each of the response variables.
+
+#### NON-PARAMETRIC ALTERNATIVE
+
+If the data does not fulfill the assumptions for MANOVA, we can use a dissimilarity/distance based approach, where a dissimilarity matrix is calculated based on all response variables. We can then determine if there are significant differences between the dependent groups using either **Analysis of similarities** (ANOSIM) or **Permutational Multivariate Analysis of Variance Using Distance Matrices** (PERMANOVA**)**.
+
+ANOSIM provides a way to test statistically whether there is a significant difference between two or more groups of sampling units. If two groups of sampling units are really different in their species composition, then compositional dissimilarities between the groups ought to be greater than those within the groups. The anosim statistics R is based on the difference of mean ranks between groups ($r_B$) and within groups ($r_W$). The function returns a lot of information to ease studying its performance, but it can confound the differences between groups and dispersion within groups and the results can be difficult to interpret ([Warton et al. 2012](https://doi.org/10.1111/j.2041-210X.2011.00127.x)).
+
+PERMANOVA partitions sums of squares of a multivariate data set, and are directly analogous to MANOVA (it is also known as "permutational MANOVA). Further, as the inputs are linear predictors, and a response matrix of an arbitrary number of columns, they are a robust alternative to both parametric MANOVA and to ordination methods for describing how variation is attributed to different experimental treatments or uncontrolled covariates. While PERMANOVA can also be confounded by differences in dispertion, it is more robust than ANOSIM and should be used (and interpreted cautiously), if there is a significant difference in beta dispertion. PERMANOVA is performed in R using the function `adonis2`.
+
+Both methods are closely related to the functions `betadisper`, used to test for differences in within-group variation, and `metaMDS`, used to create a non-metric multidimensional scaling (NMDS) of the data to visualize the dissimilarities.
+
+The analysis should is split into the following steps:
+
+-   Prep data
+
+-   Test within-group dispertion
+
+-   Run ANOSIM or PERMANOVA
+
+-   Visualize using NDMS
+
+##### PREP
+
+First we have to create a subset of the data with the samples and variables to include.
+
+```{r test-comparison-nonparametric-prep}
+# List variables to use
+VARS <- c("PFOS_serum8_ug","bw", "PFOS_liver_mg", "propanoic", "liver_w", "cecum_w", "Observed")
+
+# create subset
+samples.used <- dat %>% 
+  filter(day == "d8") %>%
+  select(Sample, any_of(VARS)) %>%
+  drop_na() %>%
+  pull(Sample)
+  
+dat.used <- dat %>% 
+  filter(Sample %in% samples.used)  
+# make community matrix - extract columns with dependent variables, turn data frame into matrix
+m_com <-  dat.used %>%
+  select(any_of(VARS)) %>%
+  drop_na() %>%
+  as.matrix() %>%
+  scale(center = FALSE)
+
+# Create distance object
+bray.used <- vegdist(m_com, method = "bray")
+
+```
+
+##### BETADISPERTION
+
+Next step is to apply the `betadisper` function. The function implements Marti Anderson's PERMDISP2 procedure for the analysis of multivariate homogeneity of group dispertions (variances). betadisper is a multivariate analogue of Levene's test for homogeneity of variances. Non-euclidean distances between objects and group centers (centroids or medians) are handled by reducing the original distances to principal coordinates. This procedure has latterly been used as a means of assessing beta diversity. to determine if there is any differences in within-group dispertion.
+
+```{r test-comparison-nonparametric-dispertion}
+
+# model group group dispersion
+disp <- betadisper(bray.used, dat.used$treatment)
+
+# test dispersion
+anova(disp)
+
+
+# Create boxplot of dispersion
+boxplot(disp)
+```
+
+> If no significant differences were found perform ANOSIM, else perform PERMANOVA and interpret carefully
+
+##### ANOSIM
+
+ANOSIM is performed in R using the `anosim` function.
+
+```{r test-comparison-nonparametric-anosim}
+
+# run ANOSIM
+ano <- anosim(m_com, dat.used$treatment, distance = "bray", permutations = 9999)
+ano
+
+```
+
+The ANOSIM output consist of:
+
+-   `Call`: The full command run.
+
+-   `Dissimilarity`: The dissimilarity metric used.
+
+-   `ANOSIM statistics R`: The strength of the correlation between the response variables and the dependent variables.
+
+-   `Significance`: The p-value for the ANOSIM statistics.
+
+-   `Permutation`: indicate if any limits have been set on how data were permutated.
+
+-   `Number of permutations`: Number of permutations performed.
+
+##### PERMANOVA
+
+PERMANOVA is performed in R using the `adonis2` function.
+
+```{r test-comparison-nonparametric-permanova}
+
+# Run PERMANOVA
+perm <- adonis2(m_com ~ treatment, method = "bray", data = dat.used,permutations = 9999)
+perm
+
+```
+
+The `adonis2` output is identical to the output of a `manova` and should be interpreted in the same manner.
+
+##### VISUALIZE
+
+To visualize the data we can perform an NMDS and then plot both samples and variable effect in two dimensions.
+
+```{r test-comparison-anosim}
+# Calculate NMDS
+nmds = metaMDS(m_com, distance = "bray")
+
+# Extract data
+dat.used$NMDS1 <- scores(nmds)$sites[,1]
+dat.used$NMDS2 <- scores(nmds)$sites[,2]
+data.vars = as.data.frame(scores(nmds)$species)
+
+# Create plot
+ggplot() + 
+  geom_point(data = dat.used, aes(x = NMDS1, y = NMDS2, color = treatment)) +
+    geom_segment(data = data.vars, 
+               aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2, color = NULL), 
+               arrow = arrow(type = "closed", length = unit(0.1, "inches")),
+               show.legend = FALSE) + 
+  geom_text(data = data.vars, 
+            aes(x = NMDS1, y = NMDS2, label = row.names(data.vars), color = NULL), 
+            show.legend = F) +
+  ggsci::scale_color_jco()
+
+```
+
+## CORRELATION TEST
+
+Correlation test are used when both sets of variable is of the same type.
+
+### LOAD DATA
+
+```{r}
+# load data 
+load("R_objects/stat_test_feces.RData")
+```
+
+### CHI^2^
+
+A chi-square ($\chi^2$) test of independence is a nonparametric hypothesis test. You can use it to test whether two categorical variables are related to each other. A Pearson's chi-square test may be an appropriate option for your data if **all** of the following are true:
+
+1.  You want to test a hypothesis about **one or more categorical variables**. If one or more of your variables is quantitative, you should use a different statistical test. Alternatively, you could convert the quantitative variable into a categorical variable by separating the observations into intervals.
+
+2.  The **sample was randomly selected** from the population.
+
+3.  There are a **minimum of five observations expected** in each group or combination of groups.
+
+> This is the test we use to determine if sample groups are independent from batch effects
+
+```{r test-correlation-chisq}
+# Set variables
+VAR.1 <- "Seq_run"
+VAR.2 <- "treatment"
+
+# Calculate distribution counts
+test.tab <- dat %>%
+  select(any_of(c(VAR.1,VAR.2))) %>%
+  table()
+
+# Determine distribution percentages
+prop.table(test.tab,2)*100
+
+# Test if any difference is significant (if not significant the batch effect should be negligible)
+chisq_test(test.tab)
+
+```
+
+### CONTINOUS VARIABLES
+
+There are two correlation tests that can be used for continuous variables, Pearson correlation and Spearman rank correlation.
+
+**Pearson correlation (r)** correlation measures a linear dependence between two variables (x and y). It's also known as a **parametric correlation** test because it depends to the distribution of the data. It can be used only when x and y are from normal distribution. The plot of $y=f(x)$ is named the **linear regression** curve.
+
+**Spearman rank correlation coefficient** (Spearman's rho $(\rho)$) statistic is used to estimate a rank-based measure of association. This test may be used if the data do not come from a bivariate normal distribution.
+
+```{r test-correlation-continuous}
+# Set method
+METHOD <- "spearman"
+
+# Set variables
+VAR.1 <- "bw"
+VAR.2 <- "Observed"
+
+# Run test
+cor.test(pull(dat,VAR.1),pull(dat,VAR.2), method = METHOD)
+
+# Create plot with correct correlation statistics
+filename <- paste0("plots/CORplot_",VAR.1,"_",VAR.2,".png")
+
+ggscatter(dat, x = VAR.2, y = VAR.1,
+          add = "reg.line", conf.int = TRUE, 
+          cor.coef = TRUE, cor.method = METHOD)
+suppressMessages(ggsave(filename = filename, device = "png"))
+
+
+```
+
+# VISUALIZE
+
+This section will take you through how to generate graphic representations of the data and statistical results.
+
+# FINAL COMMENT
+
+This completes the fundamental statistical test of the sample variables.
+
+If not yet finished, continue with the following steps:
+
++------------------------+----------------------------+-----------------------------------------------------------------+
+| Analysis               | Template                   | Note                                                            |
++========================+============================+=================================================================+
+| Microbiome description | GMH_description            | Statistical test of sample_data variables, incl alpha diversity |
++------------------------+----------------------------+-----------------------------------------------------------------+
+| Beta diversity         | GMH_beta_diveristy         | Statistical test and visualization of beta diversity            |
++------------------------+----------------------------+-----------------------------------------------------------------+
+| Differential abundance | GMH_differential_abundance | Test differential abundance of taxa against sample variables    |
++------------------------+----------------------------+-----------------------------------------------------------------+
+
+# SETTINGS {.tabset .tabset-fade .tabset-pills}
+
+Overview of the parameters and packages that were used for this Rmarkdown.
+
+## PARAMETERS
+
+The following paramenters were set in for this analysis:
+
+```{r parameters, eval=TRUE}
+params <- readRDS( "R_objects/params_testvar.RDS")
+
+
+tmp <- unlist(params)
+dat <- data.frame(Parameter = names(tmp), Value = unname(tmp))
+
+
+kbl(dat, row.names = F) %>% kable_classic(lightable_options = "striped")
+
+```
+
+## SESSION INFO
+
+The analysis was run in the following environment:
+
+```{r packages, eval=TRUE}
+sessionInfo()
+```

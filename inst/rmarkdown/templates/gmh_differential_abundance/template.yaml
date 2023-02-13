@@ -1,0 +1,4 @@
+name: GMH_differential_abundance
+description: >
+    Identification of differentially expressed taxa, structured around the DAtest package and supplemented with plots.
+create_dir: FALSE

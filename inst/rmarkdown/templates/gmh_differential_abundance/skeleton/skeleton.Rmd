@@ -1,0 +1,75 @@
+---
+title: "<PROJECT> Differential Abundance"
+author: "<YOUR NAME>"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::readthedown:
+    toc_depth: 4
+    collapsed: false
+    code_folding: hide
+    number_sections: false
+knit: (function(inputFile, encoding) { 
+    rmarkdown::render(
+        inputFile, encoding = encoding,
+        output_dir = file.path(dirname(inputFile),"output"),
+        output_file = paste0("<PROJECT>", Sys.Date(), "_differential_abundance.html"))
+        })
+---
+
+# INFO {.tabset .tabset-fade .tabset-pills}
+
+This template is build to use the output from **GMH_import** as input. It will take you through a basic test of differential abundance for the project.
+
+## BACKGROUND
+
+Differential abundance analysis aims to find the differences in the abundance of each taxa between two classes of subjects or samples, assigning a significance value to each comparison. Several bioinformatic methods have been specifically developed, taking into account the challenges of microbiome data, such as sparsity, the different sequencing depth constraint between samples and compositionality. A myriad of statistical methods exists for conducting these analyses, but it can be difficult to find the appropriate method to use. The optimal test to use depends on your sequencing data and the structure of the metadata (paired/independent samples, number of groups, covariates, normalization, etc.).
+
+The DAtest package ([Russel *et al.* 2018](https://doi.org/10.1101/241802)) can help to choose an appropriate method. It determines the false discovery rate and the true positive rate of all methods that is suitable for the variable(s) tested. This minimizes the risk of false positives.
+
+The workflow in this template goes through the following steps:
+
+1\. Data preparation and prefiltering.
+
+2\. Identify suitable statistical test.
+
+3\. Perform the statistical test.
+
+4\. Visualize the output in a plot.
+
+This template leans heavily on the work presented in [Russel *et al.* 2018](https://doi.org/10.1101/241802).
+
+### DAtest
+
+DAtest is a package for comparing different differential abundance methods used in microbial marker-gene (e.g. 16S rRNA), RNA-seq and protein/metabolite abundance analysis.
+
+There are many methods for testing differential abundance and no gold standard, but results can vary a lot between the different statistical methods. This package aims at aiding the analyst in choosing a method for a specific dataset based on empirical testing.
+
+The method goes as follows:
+
+1.  Shuffle predictor variable (E.g. case vs. control)
+
+2.  Spike in data for some randomly chosen features (OTU/ASV/gene/protein/metabolite), such that they are associated with the shuffled predictor
+
+3.  Apply methods, and check:
+
+    -   whether they can find the spike-ins
+
+    -   whether the false discovery rate is controlled
+
+#### ASSUMPTIONS
+
+The method assumes that most features are NOT associated with the predictor. It is therefore advised to first run an ordination (PCA/PCoA), PERMANOVA or similar and if there is clear separation associated with the predictor, DAtest should not be used to choose a method. In this case, only the False Positive Rate (FPR) can be trusted, and it can be used to filter methods with a high FPR.
+
+# \<VARIABLE\> - \<SUBSET\> - \<TAXONOMIC LEVEL\>
+
+To perform a differential abundance test for multiple variables, subsets, and/or taxonomic ranks, please create copies of this section and name clearly.
+
+> As an example in this template I will perform a nested test of pfos and van, at day 8 (d8), and at genus level.
+
+# DATA PREPARATION
+
+# IDENTIFY TEST
+
+# RUN TEST
+
+# VISUALIZATION

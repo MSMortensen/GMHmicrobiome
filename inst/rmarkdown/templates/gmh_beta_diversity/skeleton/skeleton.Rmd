@@ -1,0 +1,609 @@
+---
+title: "<PROJECT> Microbiome description"
+author: "Your Name"
+date: "`r Sys.Date()`"
+output:
+  rmdformats::readthedown:
+    toc_depth: 4
+    collapsed: false
+    code_folding: hide
+    number_sections: false
+knit: (function(inputFile, encoding) { 
+    rmarkdown::render(
+        inputFile, encoding = encoding,
+        output_dir = file.path(dirname(inputFile),"output"),
+        output_file = paste0("<PROJECT>_", Sys.Date(), "_beta_diversity.html"))
+        })
+params:
+    input: "R_objects/<PHYLOSEQ OBJECT>"
+    group_var: "<GROUP VARIABLE>"
+    subject_var: "<SUBJECT VARIABLE>"
+    time_var: "<TIME VARIABLE>"
+---
+
+# INFO
+
+This template is build to use the output from **GMH_import** as input. It will take you through a basic beta diversity analysis for the project. Beta diversity is the difference between samples, this means that we compare samples as a whole. The analysis generally consists of three steps:
+
+1.  Calculation of distance/dissimilarity between samples.
+
+2.  Visualization of the data (ordination).
+
+3.  Statistical analysis (PERMANOVA. ANOSIM, ...).
+
+For each steps your choices will impact the interpretation of the output. This will be expanded in each section.
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(GMHmicrobiome)
+library(ggpubr)
+library(kableExtra)
+library(phyloseq)
+library(cowplot)
+library(ggExtra)
+library(vegan)
+
+# save parameters
+saveRDS(params, "R_objects/params_betadiv.RDS")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+## PROJECT
+
+PLEASE GIVE A SHORT PROJECT SUMMARY HERE (sample origin, goal, etc.)
+
+## VARIABLES
+
+PLEASE EXPLAIN THE USED VARIABLES HERE (subject, group, and time)
+
+# CALCULATE DISTANCES
+
+## PREPARE DATA
+
+First step is to create a clean phyloseq object (remove samples missing relevant data and/or subset by a relevant variable).
+
+Beta diversity are affected by all samples included, so if some samples are removed, this should preferably be done before the beta diversity is calculated. \> qualitative metrics are sensitive to sequencing depth, so rarefaction should be done for those metrics as well.
+
+```{r}
+
+# Load data
+params <- readRDS("R_objects/params_betadiv.RDS")
+load(params$input)
+
+# Create subset
+phy.clean <- subset_samples(phy, material == "Feces")
+
+# Clean data
+phy.clean <- prune_samples(sample_names(phy.clean)[!is.na(sample_data(phy.clean)[,params$group_var])], phy.clean)
+
+# Remove empty taxa
+phy.clean <- prune_taxa(taxa_sums(phy.clean) > 0, phy.clean)
+
+# Recalculate midpoint root
+phy_tree(phy.clean) <- phangorn::midpoint(phy_tree(phy.clean))
+
+# Perform multiple rarefactions
+phy.rare <- multiple_rarefy(phy.clean)
+
+# Remove empty taxa
+phy.rare <- prune_taxa(taxa_sums(phy.rare) > 0, phy.rare)
+
+# Recalculate midpoint root
+phy_tree(phy.rare) <- phangorn::midpoint(phy_tree(phy.rare))
+
+# Save object
+save(phy.rare, phy.clean, file = "R_objects/Phyloseq_betadiv.Rdata")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE)) #will clear all objects includes hidden objects.
+invisible(gc()) #free up memory and report the memory usage.
+```
+
+## CALCULATE
+
+There are many different algorithms that can be used to calculate beta diversity. Each metric has its own advantages and many times a comparison of the results from two metrics tells more about the data than each one separately. I will include phylogeny based (UniFrac and weighted UniFrac), qualitative (presence/absence), quantitative (abundance based), and compositional (Aitchison) metrics in this template
+
+### UNWEIGHTED UNIFRAC
+
+The unique fraction metric, or UniFrac, measures the phylogenetic distance between sets of taxa in a phylogenetic tree as the fraction of the branch length of the tree that leads to descendants from either one environment or the other, but not both [(Lozupone & Knight, 2005)](https://doi.org/10.1128/AEM.71.12.8228-8235.2005). This metric is sensitive to sequencing depth, so it is required to use a rarefied phyloseq object The UniFrac algorithm requires a rooted tree, so if ASVs has been removed from the raw da the tree should be rerooted manually, else a random ASV will be chosen as root.
+
+```{r calc-unif, eval=FALSE, echo=TRUE}
+
+# load
+params <- readRDS("R_objects/params_betadiv.RDS")
+load("R_objects/Phyloseq_betadiv.Rdata")
+
+# Calculate UniFrac distances
+unif.dist <- UniFrac(phy.rare, weighted = FALSE, parallel = FALSE)
+
+# Calculate PCoA data
+unif.pcoa <- ordinate(phy.rare, method = "PCoA",distance = unif.dist)
+unif.nmds <- metaMDS(unif.dist, k = 5, trymax = 1000)
+
+# Save distance objects
+save(unif.dist, unif.nmds, unif.pcoa, phy.rare, file = "R_objects/bdiv_unif.RData")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+### WEIGHTED UNIFRAC
+
+The unique fraction metric, or UniFrac, measures the phylogenetic distance between sets of taxa in a phylogenetic tree as the fraction of the branch length of the tree that leads to descendants from either one environment or the other, but not both [(Lozupone & Knight, 2005)](https://doi.org/10.1128/AEM.71.12.8228-8235.2005). Weighted UniFrac takes the abundance of each ASV into account instead of just presence/absence, which means that it will not be sensitive to sequencing depth. The UniFrac algorithm requires a rooted tree, so if ASVs has been removed from the raw da the tree should be rerooted manually, else a random ASV will be chosen as root.
+
+```{r calc-wunif, eval=FALSE, echo=TRUE}
+
+# load
+params <- readRDS("R_objects/params_betadiv.RDS")
+load("R_objects/Phyloseq_betadiv.Rdata")
+
+# Calculate UniFrac distances
+wuf.dist <- UniFrac(phy.clean, weighted = TRUE, parallel = FALSE)
+
+# Calculate PCoA data
+wuf.pcoa <- ordinate(phy.clean, method = "PCoA",distance = wuf.dist)
+wuf.nmds <- metaMDS(wuf.dist, k = 5, trymax = 1000)
+
+# Save distance objects
+save(wuf.dist, wuf.nmds, wuf.pcoa, phy.clean, file = "R_objects/bdiv_wunif.RData")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+### BRAY-CURTIS
+
+Bray-Curtis dissimilarity index (as implemented by the vegan package) is the sum of abundance difference for each species/ASV, divided by theoretical maximum difference between the samples if no ASV overlapped. The formula used is: $$d_{jk} = \frac{\sum|n_{ij}-n_{ik}|}{\sum(n_{ij}+n_{ik})}$$ Bray-Curtis dissimilarity is not a true distance metric as it does not adhere to the [triangle inequality](https://en.wikipedia.org/wiki/Triangle_inequality), but is often used to compare microbiomes. Bray-Curtis dissimilarities are based on the assumption that measurements are taken from equal areas, so differences in total counts between samples will bias the metric. As differences in sequences depth is due to differences in the lab procedures and not biological differences, we should transform our counts to relative abundances before calculating Bray-Curtis dissimilarities. By transforming the data to abundances no data is lost, but rarefied data can also be used.
+
+```{r calc-bray, eval=FALSE, echo=TRUE}
+
+# load
+params <- readRDS("R_objects/params_betadiv.RDS")
+load("R_objects/Phyloseq_betadiv.Rdata")
+
+# transform counts
+phy.ra <- transform_sample_counts(phy, function(x) x/sum(x))
+
+# Calculate Bray-Curtis dissimilarities
+bray.dist <- distance(phy.ra, method = "bray",)
+
+# Calculate PCoA data
+bray.pcoa <- ordinate(phy.ra, method = "PCoA",distance = bray.dist)
+bray.nmds <- metaMDS(bray.dist, k = 5, trymax = 1000)
+
+# Save distance objects
+save(bray.dist, bray.nmds, bray.pcoa, phy.ra, file = "R_objects/bdiv_bray.RData")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+### JACCARD
+
+The Jaccard similarity measures the similarity between two sets of data to see which members are shared and distinct. The Jaccard similarity is calculated by dividing the number of observations in both sets by the number of observations in either set. In other words, the Jaccard similarity can be computed as the size of the intersection divided by the size of the union of two sets. This can be written in set notation using intersection $(A \cap B)$ and unions $(A \cup B)$ of two sets: $$J(A,B) = \frac{|A \cap B|}{|A \cup B|}$$ where $|A \cap B|$ gives the number of members shared between both sets and $|A \cup B|$ gives the total number of members in both sets (shared and un-shared). The Jaccard Similarity will be 0 if the two sets don't share any values and 1 if the two sets are identical.
+
+Additionally, this function can be used to find the dissimilarity between two sets by calculating:
+$$d(A,B) = 1 - J(A,B)$$
+> We will be calculating binary Jaccard dissimilarity
+
+```{r calc-jac, eval=FALSE, echo=TRUE}
+
+# load
+params <- readRDS("R_objects/params_betadiv.RDS")
+load("R_objects/Phyloseq_betadiv.Rdata")
+
+# Calculate Jaccard binary dissimilarities
+jac.dist <- distance(phy.rare, method = "jaccard", binary = TRUE)
+
+# Calculate PCoA data
+jac.pcoa <- ordinate(phy.rare, method = "PCoA",distance = jac.dist)
+jac.nmds <- metaMDS(jac.dist, k = 5, trymax = 1000)
+
+# Save distance objects
+save(jac.dist, jac.nmds, jac.pcoa, phy.rare, file = "R_objects/bdiv_jac.RData")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+### AITCHISON
+
+Aitchison distance (1986) and robust Aitchison distance [(Martino et al. 2019)](https://journals.asm.org/doi/10.1128/mSystems.00016-19) are metrics that deal with compositional data. The Aitchison distance is a dissimilarity measure calculated as the Euclidean distance between observations (samples) after performing a centered log ratio (“clr”) transformation. Aitchison distance has been said to outperform Jensen-Shannon divergence and Bray-Curtis dissimilarity, due to a better stability to subsetting and aggregation, and it being a proper distance (Aitchison et al., 2000).
+
+```{r calc-ait, eval=FALSE, echo=TRUE}
+
+# load
+params <- readRDS("R_objects/params_betadiv.RDS")
+load("R_objects/Phyloseq_betadiv.Rdata")
+
+# Calculate Bray-Curtis dissimilarities
+ait.dist <- vegan::vegdist(otu_table(phy.clean), method = "robust.aitchison")
+
+# Calculate PCoA data
+ait.pcoa <- ordinate(phy.clean, method = "PCoA",distance = ait.dist)
+ait.nmds <- metaMDS(ait.dist, k = 5, trymax = 1000)
+
+# Save distance objects
+save(ait.dist, ait.nmds, ait.pcoa, phy.clean, file = "R_objects/bdiv_ait.RData")
+
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
+
+```
+
+# VISUALIZATION
+
+Beta diversity is generally visualized by a NMDS (non metric multidimensional scaling) or PCoA (Principal Coordinate Analysis) plots. Both methods creates a representation of the beta diversity on few axes (3D plots should only be used for interactive on screen representations).
+
+
+> REMEMBER that any interpretation of a plot **MUST** be supported by a statistical analysis
+
+## LOAD DATA
+First step is to  load the data and define the which variable will be tested in the following blocks.
+
+```{r load-betadiv-a, eval=TRUE, echo=TRUE}
+
+params <- readRDS("R_objects/params_betadiv.RDS")
+
+# Choose metric
+METRIC <- "ait"
+
+# Choose variable 
+VAR <- "treatment"
+
+# Load data
+load(params$input)
+
+if (METRIC == "unif") {
+  load("R_objects/bdiv_unif.RData")
+  dist.used <- unif.dist
+  nmds.used <- unif.nmds
+  pcoa.used <- unif.pcoa
+  phy.used <- phy.rare
+  rm(unif.dist, unif.nmds, unif.pcoa, phy.rare)
+} else if (METRIC == "wunif") {
+  load("R_objects/bdiv_wunif.RData")
+  dist.used <- wuf.dist
+  nmds.used <- wuf.nmds
+  pcoa.used <- wuf.pcoa
+  phy.used <- phy.clean
+  rm(wuf.dist, wuf.nmds, wuf.pcoa,phy.clean)
+} else if (METRIC == "bray"){
+  load("R_objects/bdiv_bray.RData")
+  dist.used <- bray.dist
+  nmds.used <- bray.nmds
+  pcoa.used <- bray.pcoa
+  phy.used <- phy.ra
+  rm(bray.dist, bray.nmds, bray.pcoa, phy.ra)
+} else if (METRIC == "jac"){
+  load("R_objects/bdiv_jac.RData")
+  dist.used <- bray.dist
+  nmds.used <- bray.nmds
+  pcoa.used <- bray.pcoa
+  phy.used <- phy.rare
+  rm(jac.dist, jac.nmds, jac.pcoa, phy.rare)
+} else if (METRIC == "ait"){
+  load("R_objects/bdiv_ait.RData")
+  dist.used <- ait.dist
+  nmds.used <- ait.nmds
+  pcoa.used <- ait.pcoa
+  phy.used <- phy.clean
+  rm(ait.dist, ait.nmds, ait.pcoa, phy.clean)
+}
+
+# Extract metadata from phyloseq
+mdat <- data.frame(sample_data(phy.used))
+
+# If a variable consist of numbers, but represent distinct groups remember to make it into a factor
+mdat[,VAR] <- as.factor(mdat[,VAR])
+```
+
+## CLEAN ORDINATION {.tabset .tabset-fade .tabset-pills}
+
+The data from an ordination can be plotted in many different ways. Here I will look at the importance of each axis in the PCoA plot, perform standard 2D-ordination plots, and plot dispertion for each variable.
+
+### EIGENVALUES
+
+For PCoA each axis represent a specific amount of the overall variation in the dataset. this information can easily be extracted and plotted.
+
+```{r plot-eigenvalues-a, eval=TRUE, echo=TRUE}
+
+# Extract eigen values
+eigen <- pcoa.used$values
+eigen$Axis <- as.numeric(row.names(eigen))
+
+# Create plots for both distance indeces
+p.eigen <- ggplot(eigen[1:10,], aes(x = as.factor(Axis), y = 100*Relative_eig)) + 
+  geom_col(aes(fill = as.factor(Axis))) +
+  geom_point(aes(x = Axis, y = 100*Cumul_eig)) +
+  geom_line(aes(x = Axis, y = 100*Cumul_eig)) +
+  ylab("Variance explained (%)") +
+  xlab("Axis") +
+  theme_pubr(legend = "none") + ggsci::scale_fill_jco()
+p.eigen + ggtitle(paste("Variance per axis for", METRIC, sep = " "))
+suppressMessages(ggsave(plot = p.eigen, filename = paste0("plots/bdiv_PCoA_axis",METRIC,".png"), device = "png"))
+
+```
+
+### PLOT
+
+Phyloseq has a plotting function, but it is a bit limited in some of the settings. Therefore, I recommend to use the function to create a table of the data and then make your own plots
+The first plot highlights the location of each group on the first 5 axis. Based on this an optimal set of axis can be chosen for the following ordination plot.
+
+```{r ordination-find-axis-a, eval=TRUE}
+# Create plots of eigenvalues for PCoA plots
+pcoa.tab <- plot_ordination(phy, pcoa.used,axes = 1:5,justDF = TRUE)
+nmds.tab <- plot_ordination(phy, nmds.used,axes = 1:5,justDF = TRUE)
+
+# Reformat tables to create one common table
+colnames(nmds.tab)[1:5] <- c("Axis.1","Axis.2","Axis.3","Axis.4","Axis.5")
+
+nmds.tab$ordination <- "nmds"
+pcoa.tab$ordination <- "pcoa"
+
+ord.tab <- rbind(nmds.tab,pcoa.tab)
+ord.tab[,VAR] <- as.factor(ord.tab[,VAR])
+
+# Melt axis to be in one variable
+axis.tab <- pivot_longer(data = ord.tab, cols = c("Axis.1","Axis.2","Axis.3","Axis.4","Axis.5"), names_to = "Axis", values_to = "position")
+
+# Plot positions on axes
+ggplot(axis.tab, aes_string(x = "ordination", y = "position", fill = VAR)) +
+  geom_boxplot() +
+  facet_grid(Axis~.) +
+  coord_flip() + 
+  theme_pubr(legend = "bottom") + ggsci::scale_fill_jco()
+```
+
+based on the best separation on the axis in the plot above I have chosen to use Axis 1 and 2 for the ordination
+
+```{r plot-ordination-a, eval=TRUE}
+# Create NMDS plot
+plot.nmds <- ggplot(ord.tab[ord.tab$ordination == "nmds",], aes_string(x = "Axis.1", y = "Axis.2", color = VAR, group = VAR)) +
+  geom_point() + 
+  labs(color=VAR) +
+  theme_pubr(legend = "bottom")+
+  stat_ellipse() + ggsci::scale_color_jco()
+plot.nmds1 <- plot.nmds + theme_pubr(legend = "none")
+plot.nmds2 <- ggExtra::ggMarginal(p = plot.nmds1, type = 'boxplot', size = 10, groupFill = TRUE )
+
+# Create PCoA plot
+plot.pcoa <- ggplot(ord.tab[ord.tab$ordination == "pcoa",], aes_string(x = "Axis.1", y = "Axis.2", color = VAR, group = VAR)) +
+  geom_point() + 
+  theme_pubr(legend = "none") + 
+  labs(color=VAR) +
+  stat_ellipse() + ggsci::scale_color_jco()
+plot.pcoa2 <- ggExtra::ggMarginal(p = plot.pcoa, type = 'boxplot', size = 10, groupFill = TRUE)
+
+# Extract legend
+plot.legend <- get_legend(plot.nmds)
+
+# Draw plot
+p.done <- ggdraw() + 
+  draw_plot(plot.nmds2, 0, 0.1, 0.5, 0.9) + 
+  draw_plot(plot.pcoa2, 0.5, 0.1, 0.5, 0.9) +
+  draw_grob(plot.legend, 0, 0, 1, .1) +
+  draw_plot_label("NMDS") + 
+  draw_plot_label("PCoA", x = 0.5) + 
+  theme(plot.background = element_rect(fill="white", color = NA))
+
+p.done
+
+# Save plot
+plotfile <- file.path("plots",paste0("bdiv_ordination_",VAR,".png"))
+ggsave(filename = plotfile, plot = p.done, width = 14, height = 7,units = "in",dpi = 300)
+
+```
+
+
+# STATISTICAL ANALYSIS
+
+## PERMANOVA
+The more important part of a beta diversity analysis is to determine if there are any statistical significant differences in the data.
+To do this we will perform an **Permutational Multivariate Analysis of Variance Using Distance Matrices** using the vegan function `adonis2`.
+
+`adonis2` is a function for the analysis and partitioning sums of squares using dissimilarities. The function is based on the principles of [McArdle & Anderson (2001)](https://doi.org/10.1890/0012-9658(2001)082[0290:FMMTCD]2.0.CO;2) and can perform sequential, marginal and overall tests. The function also allows using additive constants or squareroot of dissimilarities to avoid negative eigenvalues, but can also handle semimetric indices (such as Bray-Curtis) that produce negative eigenvalues. The `adonis2` tests are identical to `anova.cca` of `dbrda`. With Euclidean distances, the tests are also identical to `anova.cca` of `rda`.
+
+The function partitions sums of squares of a multivariate data set, and they are directly analogous to MANOVA (multivariate analysis of variance). McArdle and Anderson (2001) and [Anderson (2001)](https://doi.org/10.1111/j.1442-9993.2001.01070.pp.x) refer to the method as “permutational MANOVA” (formerly “nonparametric MANOVA”). Further, as the inputs are linear predictors, and a response matrix of an arbitrary number of columns, they are a robust alternative to both parametric MANOVA and to ordination methods for describing how variation is attributed to different experimental treatments or uncontrolled covariates. The method is also analogous to distance-based redundancy analysis in functions `dbrda` and `capscale` [(Legendre and Anderson 1999)](https://doi.org/10.1890/0012-9615(1999)069[0001:DBRATM]2.0.CO;2), and provides an alternative to AMOVA (nested analysis of molecular variance, Excoffier, Smouse, and Quattro, 1992; `amova` in the ade4 package) for both crossed and nested factors.
+
+> Anderson (2001, Fig. 4) warns that the method may confound location and dispersion effects: significant differences may be caused by different within-group variation (dispersion) instead of different mean values of the groups (see [Warton et al. 2012](https://doi.org/10.1111/j.2041-210X.2011.00127.x) for a general analysis). However, it seems that `adonis2` is less sensitive to dispersion effects than some of its alternatives (`anosim`, `mrpp`). Function `betadisper` is a sister function to `adonis2` to study the differences in dispersion within the same geometric framework.
+
+### DISPERTION
+
+First we will test the beta diversity dispertion to determine whether any differences in dispertion might cause any PERMANOVA differences.
+
+```{r betadisp-a, eval=TRUE}
+
+# Calculate betadispertion
+bdisp <- betadisper(dist.used, mdat[,VAR])
+
+# Run statical test
+anova(bdisp)
+
+# Run posthoc test if significant and more than two groups
+TukeyHSD(bdisp)
+plot(TukeyHSD(bdisp))
+
+# Plot dispertion
+boxplot(bdisp)
+
+```
+
+When plotting the TukeyHSD, the y-axis is terribly formatted, but ordered similarly to the written output.
+
+> Any significant differences will increase the significance of the following PERMANOVA test, which should then be interpreted carefully.
+
+### RUN TEST
+
+> The formulation of the adonis2 test **MUST** be updated manually!
+
+```{r permanova-a, eval=TRUE}
+
+# Perform test
+adonis2(dist.used ~ van*pfos, data = mdat, strata = mdat$day, permutations = 999, na.action = na.omit)
+
+```
+
+## FIT VARIABLES TO ORDINATION
+
+Another way to analyse the beta diversity is to fit the metadata variables to the ordinations, this is done with the \code{vegan} function `envfit`. This function will fit both quantitative and/or qualitative variables to the ordinations
+
+### CALCULATION
+
+First step is to perform the calculation
+
+```{r envfit-calc-a, eval=TRUE}
+
+# Fit data
+fit.nmds <- envfit(nmds.used ~ treatment+bw+fecesG,mdat, na.rm=TRUE, perm = 999)
+fit.pcoa <- envfit(nmds.used ~ treatment+bw+fecesG,mdat, na.rm=TRUE, perm = 999)
+
+```
+
+### FORMAT DATA
+
+The `envfit` output is not formatted for ggplot, so we will have to do that ourselves
+
+```{r envfit-format-a,eval=TRUE}
+# Extract nmds arrows
+arrow.nmds <- data.frame(fit.nmds$vectors$arrows)
+colnames(arrow.nmds) <- c("xend","yend")
+arrow.nmds$xend <- with(arrow.nmds, xend*sqrt(fit.nmds$vectors$r)*100)
+arrow.nmds$yend <- with(arrow.nmds, yend*sqrt(fit.nmds$vectors$r)*100)
+
+# Extract pcoa arrows
+arrow.pcoa <- data.frame(fit.pcoa$vectors$arrows)
+colnames(arrow.pcoa) <- c("xend","yend")
+arrow.pcoa$xend <- with(arrow.pcoa, xend*sqrt(fit.pcoa$vectors$r)*100)
+arrow.pcoa$yend <- with(arrow.pcoa, yend*sqrt(fit.pcoa$vectors$r)*100)
+
+# extract nmds centroids
+center.nmds <- as.data.frame(fit.nmds$factors$centroids) %>% 
+  rownames_to_column(var = "treatment") %>% 
+  mutate(treatment = str_remove(treatment, "treatment"), ordination = "nmds")
+colnames(center.nmds) <- c("treatment","center.x","center.y","ordination")
+
+# extract pcoa centroids
+center.pcoa <- as.data.frame(fit.pcoa$factors$centroids) %>%
+  rownames_to_column(var = "treatment") %>% 
+  mutate(treatment = str_remove(treatment, "treatment"), ordination = "pcoa")
+colnames(center.pcoa) <- c("treatment","center.x","center.y","ordination")
+
+# cobine 
+center.dat <- rbind(center.nmds,center.pcoa)
+
+# add data to ord
+ord.tab.2 <- full_join(ord.tab,center.dat)
+
+```
+### PLOT
+
+With the variables fitted to the ordination, we can now create the plot
+
+```{r envfit-plot-a, eval=TRUE}
+
+# Create NMDS plot
+plot.nmds <- ggplot(ord.tab.2[ord.tab.2$ordination == "nmds",], aes_string(x = "Axis.1", y = "Axis.2", color = VAR)) +
+  geom_point() + 
+  labs(color=VAR) +
+  theme_pubr(legend = "bottom")+
+  geom_segment(aes(xend = center.x,yend = center.y)) +
+  geom_segment(data = arrow.nmds, 
+               aes(x = 0, y = 0, xend = xend, yend = yend, color = NULL), 
+               arrow = arrow(type = "closed", length = unit(0.1, "inches")),
+               show.legend = FALSE) + 
+  geom_text(data = arrow.nmds, 
+            aes(x = xend, y = yend, label = row.names(arrow.nmds), color = NULL), 
+            nudge_x = 2, nudge_y = 2,
+            show.legend = F) +
+  ggsci::scale_color_jco()
+plot.nmds1 <- plot.nmds + theme_pubr(legend = "none")
+plot.nmds2 <- ggExtra::ggMarginal(p = plot.nmds1, type = 'boxplot', size = 10, groupFill = TRUE )
+
+# Create PCoA plot
+plot.pcoa <- ggplot(ord.tab.2[ord.tab.2$ordination == "pcoa",], aes_string(x = "Axis.1", y = "Axis.2", color = VAR)) +
+  geom_point() + 
+  theme_pubr(legend = "none") + 
+  labs(color=VAR) +
+  geom_segment(aes(xend = center.x,yend = center.y)) +
+  geom_segment(aes(x = 0, y = 0, xend = xend, yend = yend, color = NULL), 
+               data = arrow.nmds, 
+               arrow = arrow(type = "closed", length = unit(0.1, "inches")),
+               show.legend = FALSE) + 
+  geom_text(data = arrow.nmds, 
+            aes(x = xend, y = yend, label = row.names(arrow.nmds), color = NULL), 
+            nudge_x = 2, nudge_y = 2,
+            show.legend = F) +
+  #stat_ellipse() + 
+  ggsci::scale_color_jco()
+plot.pcoa2 <- ggExtra::ggMarginal(p = plot.pcoa, type = 'boxplot', size = 10, groupFill = TRUE)
+
+# Draw plot
+p.done <- ggdraw() + 
+  draw_plot(plot.nmds2, 0, 0.1, 0.5, 0.9) + 
+  draw_plot(plot.pcoa2, 0.5, 0.1, 0.5, 0.9) +
+  draw_grob(plot.legend, 0, 0, 1, .1) +
+  draw_plot_label("NMDS") + 
+  draw_plot_label("PCoA", x = 0.5) + 
+  theme(plot.background = element_rect(fill="white", color = NA))
+p.done
+
+# Save plot
+plotfile <- file.path("plots",paste0("bdiv_ordination_annotated_",VAR,".png"))
+ggsave(filename = plotfile, plot = p.done, width = 14, height = 7,units = "in",dpi = 300)
+
+```
+
+# FINAL COMMENT
+
+This completes the fundamental beta diversity analysis.
+
+If not yet finished, continue with the following steps:
+
+| Analysis               | Template                   | Note                                                               |
+|------------------|---------------------|---------------------------------|
+| Microbiome description | GMH_description            | Statistical test of sample_data variables, incl alpha diversity    |
+| Statistical testing    | GMH_test_variables         | Statistical test and visualization of alpha diversity and metadata |
+| Differential abundance | GMH_differential_abundance | Test differential abundance of taxa against sample variables       |
+
+# SETTINGS {.tabset .tabset-fade .tabset-pills}
+
+Overview of the parameters and packages that were used for this Rmarkdown.
+
+## PARAMETERS
+
+The following paramenters were set in for this analysis:
+
+```{r parameters, eval=TRUE}
+params <- readRDS( "R_objects/params_betadiv.RDS")
+
+
+tmp <- unlist(params)
+dat <- data.frame(Parameter = names(tmp), Value = unname(tmp))
+
+
+kbl(dat, row.names = F) %>% kable_classic(lightable_options = "striped")
+
+```
+
+## SESSION INFO
+
+The analysis was run in the following environment:
+
+```{r packages, eval=TRUE}
+sessionInfo()
+```

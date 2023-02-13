@@ -3,7 +3,7 @@
 .RData
 .Ruserdata
 README.Rmd
-*.Rmd
+test.Rmd
 output/
 plots/
 R_objects/
