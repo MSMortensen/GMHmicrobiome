@@ -11,8 +11,7 @@
 #'
 #' @return A rarefied \code{phyloseq} object with rarefied samples
 #' @export
-#'
-#' @examples
+
 multiple_rarefy <- function(pobject, ntables=100, depth = round(min(sample_sums(pobject))*0.9), distmethod="bray", summarymeasure=mean, seedstart=500, verbose=TRUE) {
   require("vegan")
   loadNamespace("phyloseq")

@@ -13,6 +13,9 @@ initiate_GMH_project(folders = TRUE, files = TRUE, overwrite = FALSE)
 
 \item{overwrite}{Logical indicator if files should be overwritten if present. Default = FALSE}
 }
+\value{
+Create system files and folders
+}
 \description{
 Creates the folders and/or import the base Rmarkdown templates needed to run basic microbiome analysis using the \code{GMHmicrobiome} pipeline.
 }

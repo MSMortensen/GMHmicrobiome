@@ -7,8 +7,7 @@
 #'
 #' @return The provided \code{phyloseq} object with an updated tax_table() and poorly classified taxa removed
 #' @export
-#'
-#' @examples
+
 clean_taxa <- function(pobject, tax_remove = "Phylum", verbose = TRUE) {
   loadNamespace("phyloseq")
 

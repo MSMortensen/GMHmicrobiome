@@ -5,8 +5,7 @@
 #'
 #' @return Dataframe ordered by taxonomy and where the lowest taxonomic level is a factor with levels in the present order.
 #' @export
-#'
-#' @examples
+
 sort_taxa <- function(dat) {
   # set columns
   tax.levels <- c("Kingdom", "Phylum", "Class","Order","Family","Genus","Species", "Taxa")

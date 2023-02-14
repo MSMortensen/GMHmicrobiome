@@ -8,8 +8,7 @@
 #'
 #' @return A \code{phyloseq} object with the excluded taxa grouped as "Others"
 #' @export
-#'
-#' @examples
+
 filter_prevalence <- function(pobject, group = NA, min.samples = (length(sample_names(pobject))/10), includes = "any"){
   loadNamespace("phyloseq")
 

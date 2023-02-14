@@ -88,7 +88,11 @@ The package contains the following functions:
   `filter_prevalence()`: Filters taxa based on prevalence
   (presence/absence) and merges low prevalence taxa into “Others”.  
   `filter_rank()`: Filters taxa based on ranked average abundance and
-  merges lower ranked taxa into “Others”.
+  merges lower ranked taxa into “Others”.  
+  `filter_variance()`: Filters taxa based on coefficient of variation
+  (cov) and merges less variating taxa into “Others”. Low abundant taxa
+  more likely to have high cov so I recommend filtering by abundance or
+  prevalence first.
 
 - **Taxa cleaning**  
   `clean_taxa()`: Replaces NA values in `tax_table()` with the lowest

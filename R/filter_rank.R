@@ -6,8 +6,7 @@
 #' @param min.rank cut-off ratio (taxa with mean abundance below this ratio (0.1 = 10 \%) will be group in "Others") Default 10
 #' @return A filtered phyloseq object
 #' @export
-#'
-#' @examples
+
 filter_rank <- function(pobject, group = NA, min.rank = 10, includes = "any"){
   loadNamespace("phyloseq")
 

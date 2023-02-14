@@ -11,8 +11,7 @@
 #'
 #' @return Data frame with average alpha diversity per sample at each sequencing depth (from 1 to maxdepth)
 #' @export
-#'
-#' @examples
+
 Rcurve_data <- function(pobject, ntables=10, step=250,maxdepth = round(unname(quantile(sample_sums(pobject),0.9))), methods=c("Observed","Chao1","FaithPD","Shannon"), seedstart=500, verbose=FALSE) {
   require("vegan")
   loadNamespace("phyloseq")

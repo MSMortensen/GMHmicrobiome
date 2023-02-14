@@ -10,8 +10,7 @@
 #'
 #' @return Data frame with mean and sd alpha diversity for each alpha diveristy metric added to the sample data from phyloseq.
 #' @export
-#'
-#' @examples
+
 calculate_alpha_diversity <- function(pobject, ntables=100, depth = round(min(sample_sums(pobject))*0.9), INDECES=c("Observed","Chao1","FaithPD","Shannon"), seedstart=500, verbose=FALSE) {
   require("vegan")
   loadNamespace("phyloseq")

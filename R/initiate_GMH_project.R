@@ -4,10 +4,9 @@
 #' @param folders Logical indicator if folder should be created. Default = TRUE
 #' @param files Logical indicator if Rmarkdown templates should be created. Default = TRUE
 #' @param overwrite Logical indicator if files should be overwritten if present. Default = FALSE
-#' @return
+#' @return Create system files and folders
 #' @export
-#'
-#' @examples
+
 initiate_GMH_project <- function(folders = TRUE, files = TRUE, overwrite = FALSE){
   # Create used folders if missing
   if (isTRUE(folders)) {

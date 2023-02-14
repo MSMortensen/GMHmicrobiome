@@ -7,8 +7,7 @@
 #' @param includes If using groups, should taxa be included if they are above the min.abundance in any, all, or a specific number of groups Default "any"
 #' @return A filtered phyloseq object
 #' @export
-#'
-#' @examples
+
 filter_abundance <- function(pobject, group = NA, min.abundance=0.01, includes = "any"){
   loadNamespace("phyloseq")
 
