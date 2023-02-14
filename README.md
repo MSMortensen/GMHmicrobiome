@@ -48,7 +48,7 @@ finalised, but this will be updated when they are added.
   *Output*: Relevant plots and a structured .html document showing the
   statistical analyses.
 
-- **GMH_betadiversity**  
+- **GMH_beta_diversity**  
   *Input*: One phyloseq objects from **GMH_import.**  
   *Description*: Fundamental analysis of beta diversity, identifying
   differences between groups and correlations with quantitative
@@ -56,7 +56,8 @@ finalised, but this will be updated when they are added.
   *Output*: Relevant plots and a structured .html document showing the
   beta diversity analysis
 
-- **GMH_differential_abundance** (Not yet included)  
+- **GMH_differential_abundance** (In progress, only placeholder
+  template)  
   *Input*: One phyloseq objects from **GMH_import.**  
   *Description*: Identification of differentially expressed taxa. This
   is structured around the DAtest package and supplemented with plots.  
@@ -131,6 +132,3 @@ steps below:
     Rmarkdown.
 
 - Run any of the three analysis templates.
-
-> When the last scripts have been added the initial command can be run
-> with `files = TRUE`

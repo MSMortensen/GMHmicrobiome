@@ -2,8 +2,7 @@
 .Rhistory
 .RData
 .Ruserdata
-README.Rmd
-test.Rmd
+/*.Rmd
 output/
 plots/
 R_objects/

@@ -68,6 +68,8 @@ To perform a differential abundance test for multiple variables, subsets, and/or
 
 # DATA PREPARATION
 
+When testing for differential abundance, each taxa is tested individually and all p-values are then corrected for multiple testing. This means that the more taxa tested, the higher the risk of false negatives. To avoid this, we can remove taxa that are irrelevant. This can be done based on prevalence (presence/absence), abundance, rank, or variation.  
+
 # IDENTIFY TEST
 
 # RUN TEST
