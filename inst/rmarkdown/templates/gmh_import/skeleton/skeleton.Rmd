@@ -39,7 +39,7 @@ Suggested workflow:
 knitr::opts_chunk$set(echo = TRUE ,warning = FALSE, message = FALSE)
 
 # Load libraries
-library(tidyverse)
+library(GMHmicrobiome)
 library(phyloseq)
 library(decontam)
 library(pals)
@@ -61,8 +61,6 @@ This section will import and merge phyloseq and metadata
 First step is to load the output from the pipeline. This section generates a unique sample identifiers that will be used to merge with metadata in the following section. The two additional variables created ("is.neg" and "type") will be used for decontamination later.
 
 ```{r Load-sequencing-data, eval = TRUE}
-
-params <- readRDS("R_objects/import_params.RDS")
 # Load analysis data
 load(params$input)
 
@@ -97,7 +95,7 @@ tmp <- data.frame(sample_data(phy))
 meta <- read_csv("<CODE FROM IMPORT WIZARD>")
 
 # Create an identical ID variable to use for merging
-meta$SampleID <- with(meta, paste(Run,Sample_ID, sep = "_"))
+meta$SampleID <- with(meta, paste(Seq_run,Sample_ID, sep = "_"))
 
 # Verify that all the IDs are identical between the datasets
 if (nrow(anti_join(tmp, meta, by = "SampleID")) != 0) {
@@ -120,12 +118,12 @@ if (length(shared_cols) != 0) message("The following columns are present in both
 This section will now add the metadata to the sequencing data and save the resulting phyloseq file.
 
 ```{r merge-data, eval = TRUE}
-# If any other columns than ID is in both, consider if you want it removed
+# If any other columns than SampleID is in both, consider if you want it removed
 meta <- meta %>% select(-one_of(shared_cols))
 
 # When you are sure that all match, then merge and add to phyloseq
-mtmp <- left_join(tmp,meta,by="ID")
-row.names(mtmp) <- mtmp$ID
+mtmp <- left_join(tmp,meta,by="SampleID")
+row.names(mtmp) <- mtmp$SampleID
 
 # Add the merged data to the phyloseq object
 sample_data(phy) <- mtmp
@@ -182,7 +180,7 @@ This section runs decontam to remove likely contaminants from the data set [@dec
 Only one of the parts between the hashtags should be used. **REMEMBER** to delete the other part.
 
 ```{r Decontam-single, eval = FALSE}
-params <- readRDS("R_objects/params.RDS")
+params <- readRDS("R_objects/import_params.RDS")
 # load data 
 load("R_objects/cleaned.Rdata")
 df <- data.frame(sample_data(phy))
@@ -195,8 +193,16 @@ df$Index <- seq(nrow(df))
 ggplot(data=df, aes(x=Index, y=DNA_Conc, color=type)) + geom_point()
 ggsave("plots/sequencing_depth.pdf")
 
+# Remove NA values from DNA quantification REMEMBER to update your variable
+sample_data(phy)$DNA_conc <- ifelse(is.na(sample_data(phy)$Qbit_conc),0,sample_data(phy)$Qbit_conc)
+
 # Set any sample with DNA below detection limit (or neg PCR controls) to half the lowest measured value
-sample_data(phy)$DNA_Conc[sample_data(phy)$DNA_Conc == 0] <- min(sample_data(phy)$DNA_Conc[sample_data(phy)$DNA_Conc != 0])/2
+sample_data(phy)$quant_reading <- ifelse(sample_data(phy)$DNA_Conc == 0, 
+                                         min(sample_data(phy)$DNA_Conc[sample_data(phy)$DNA_Conc != 0])/2, 
+                                         sample_data(phy)$DNA_Conc)
+
+# Set quant_reading for all mock to twice the highest measured value
+sample_data(phy)$quant_reading[sample_data(phy)$type == "Mock"] <- max(sample_data(phy)$quant_reading)*2
 
 # Identify contaminants
 contamdf <- isContaminant(phy, method="frequency", conc="DNA_Conc")
@@ -287,41 +293,79 @@ suppressMessages(ggsave("plots/sequencing_depth.pdf"))
 # Prep table for output
 contam.df <- data.frame(row.names = taxa_names(phy))
 
+# Remove NA values from DNA quantification REMEMBER to update your variable
+sample_data(phy)$DNA_conc <- ifelse(is.na(sample_data(phy)$Qbit_conc),0,sample_data(phy)$Qbit_conc)
+
 # Set any sample with DNA below detection limit (or neg PCR controls) to half the lowest measured value
-sample_data(phy)$quant_reading <- ifelse(sample_data(phy)$DNA_Conc == 0, min(sample_data(phy)$DNA_Conc[sample_data(phy)$DNA_Conc != 0])/2, sample_data(phy)$DNA_Conc)
+sample_data(phy)$quant_reading <- ifelse(sample_data(phy)$DNA_Conc == 0,
+                                         min(sample_data(phy)$DNA_Conc[sample_data(phy)$DNA_Conc != 0])/2,
+                                         sample_data(phy)$DNA_Conc)
+
+# Set quant_reading for all mock to twice the highest measured value
+sample_data(phy)$quant_reading[sample_data(phy)$type == "Mock"] <- max(sample_data(phy)$quant_reading)*2
 
 # Both methods, no batches
-contam.df$Prev.none <- isContaminant(phy, method="prevalence", neg="is.neg", detailed = FALSE)
-contam.df$Freq.none <- isContaminant(phy, method="frequency", conc="quant_reading", detailed = FALSE)
-contam.df$combined.none <- isContaminant(phy, method="combined", neg="is.neg", conc="quant_reading", detailed = FALSE)
-contam.df$minimum.none <- isContaminant(phy, method="minimum", neg="is.neg", conc="quant_reading", detailed = FALSE)
+contam.df$Prev.none <- isContaminant(phy, method="prevalence", 
+                                     neg="is.neg", detailed = FALSE)
+contam.df$Freq.none <- isContaminant(phy, method="frequency", 
+                                     conc="quant_reading", detailed = FALSE)
+contam.df$combined.none <- isContaminant(phy, method="combined", neg="is.neg", 
+                                         conc="quant_reading", detailed = FALSE)
+contam.df$minimum.none <- isContaminant(phy, method="minimum", neg="is.neg", 
+                                        conc="quant_reading", detailed = FALSE)
 
 # Both methods, Batch minimum
-contam.df$Prev.minimum <- isContaminant(phy, method="prevalence", neg="is.neg", detailed = FALSE, batch = "Run", batch.combine = "minimum")
-contam.df$Freq.minimum <- isContaminant(phy, method="frequency", conc="quant_reading", detailed = FALSE, batch = "Run", batch.combine = "minimum")
-contam.df$combined.minimum <- isContaminant(phy, method="combined", neg="is.neg", conc="quant_reading", detailed = FALSE, batch = "Run", batch.combine = "minimum")
-contam.df$minimum.minimum <- isContaminant(phy, method="minimum", neg="is.neg", conc="quant_reading", detailed = FALSE, batch = "Run", batch.combine = "minimum")
+contam.df$Prev.minimum <- isContaminant(phy, method="prevalence", neg="is.neg", 
+                                        detailed = FALSE, batch = params$batch, batch.combine = "minimum")
+contam.df$Freq.minimum <- isContaminant(phy, method="frequency", conc="quant_reading", 
+                                        detailed = FALSE, batch = params$batch, batch.combine = "minimum")
+contam.df$combined.minimum <- isContaminant(phy, method="combined", neg="is.neg", 
+                                            conc="quant_reading", detailed = FALSE, 
+                                            batch = params$batch, batch.combine = "minimum")
+contam.df$minimum.minimum <- isContaminant(phy, method="minimum", neg="is.neg", 
+                                           conc="quant_reading", detailed = FALSE, 
+                                           batch = params$batch, batch.combine = "minimum")
 
 # Both methods, Batch product
-contam.df$Prev.product <- isContaminant(phy, method="prevalence", neg="is.neg", detailed = FALSE, batch = "Run", batch.combine = "product")
-contam.df$Freq.product <- isContaminant(phy, method="frequency", conc="quant_reading", detailed = FALSE, batch = "Run", batch.combine = "product")
-contam.df$combined.product <- isContaminant(phy, method="combined", neg="is.neg", conc="quant_reading", detailed = FALSE, batch = "Run", batch.combine = "product")
-contam.df$minimum.product <- isContaminant(phy, method="minimum", neg="is.neg", conc="quant_reading", detailed = FALSE, batch = "Run", batch.combine = "product")
+contam.df$Prev.product <- isContaminant(phy, method="prevalence", neg="is.neg", 
+                                        detailed = FALSE, batch = params$batch, batch.combine = "product")
+contam.df$Freq.product <- isContaminant(phy, method="frequency", conc="quant_reading", 
+                                        detailed = FALSE, batch = params$batch, batch.combine = "product")
+contam.df$combined.product <- isContaminant(phy, method="combined", neg="is.neg", 
+                                            conc="quant_reading", detailed = FALSE, 
+                                            batch = params$batch, batch.combine = "product")
+contam.df$minimum.product <- isContaminant(phy, method="minimum", neg="is.neg", 
+                                           conc="quant_reading", detailed = FALSE, 
+                                           batch = params$batch, batch.combine = "product")
 
 # Both methods, Batch minimum
-contam.df$Prev.fisher <- isContaminant(phy, method="prevalence", neg="is.neg", detailed = FALSE, batch = "Run", batch.combine = "fisher")
-contam.df$Freq.fisher <- isContaminant(phy, method="frequency", conc="quant_reading", detailed = FALSE, batch = "Run", batch.combine = "fisher")
-contam.df$combined.fisher <- isContaminant(phy, method="combined", neg="is.neg", conc="quant_reading", detailed = FALSE, batch = "Run", batch.combine = "fisher")
-contam.df$minimum.fisher <- isContaminant(phy, method="minimum", neg="is.neg", conc="quant_reading", detailed = FALSE, batch = "Run", batch.combine = "fisher")
+contam.df$Prev.fisher <- isContaminant(phy, method="prevalence", neg="is.neg", 
+                                       detailed = FALSE, batch = params$batch, batch.combine = "fisher")
+contam.df$Freq.fisher <- isContaminant(phy, method="frequency", conc="quant_reading", 
+                                       detailed = FALSE, batch = params$batch, batch.combine = "fisher")
+contam.df$combined.fisher <- isContaminant(phy, method="combined", neg="is.neg", 
+                                           conc="quant_reading", detailed = FALSE, 
+                                           batch = params$batch, batch.combine = "fisher")
+contam.df$minimum.fisher <- isContaminant(phy, method="minimum", neg="is.neg", 
+                                          conc="quant_reading", detailed = FALSE, 
+                                          batch = params$batch, batch.combine = "fisher")
 
 # decontam summary
 contam.df$ASV <- row.names(contam.df)
 contam.long <- pivot_longer(contam.df, !ASV, names_to = "Method", values_to = "Contaminant")
 
-# Merge with sample data
+# save data to avoid rerunning for each knitting
+save(contam.df, contam.long, file = "R_objects/Decontam_tables.RData")
+
+# prep for merge with sample data
 ps.prc <- transform_sample_counts(phy, function(x) 100*x/sum(x))
 prc.melt <- suppressWarnings(psmelt(ps.prc))
-prc.m <- full_join(prc.melt, contam.long, by = c("OTU" = "ASV"))
+
+# Remove objects to free memory
+rm(contam.df, ps.prc, df,phy,phy.org)
+
+# Merge with sample data
+prc.m <- left_join(prc.melt, contam.long, by = c("OTU" = "ASV"))
 
 # Aggregate and plot
 prc.agg <- prc.m %>% group_by(Sample, type, Method, Contaminant) %>% summarise(Abundance = sum(Abundance))
@@ -329,8 +373,7 @@ decontam.plot <- ggplot(prc.agg[prc.agg$Contaminant,], aes(x = type, y = Abundan
   geom_boxplot()  + ggsci::scale_color_d3(palette = "category20")
 suppressMessages(ggsave(decontam.plot,file = "plots/contaminant_fraction_multiple.png",device = "png"))
 
-# save data to avoid rerunning for each knitting
-save(contam.df, contam.long, file = "R_objects/Decontam_tables.RData")
+
 ```
 
 *complete decontam classifications is saved in: "**R_objects/Decontam_tables.RData**"*
@@ -385,6 +428,7 @@ phy.harsh <- prune_samples(sample_sums(phy.harsh) > 1000, phy.harsh)
 save(phy, phy.harsh, file="R_objects/Decontam.Rdata")
 
 # Create csv with ASV abundance, taxonomy, and contaminant classification
+ps.prc <- transform_sample_counts(phy, function(x) x/sum(x)*100)
 tmp.phy <- suppressWarnings(merge_samples(ps.prc, "type"))
 tmp.phy <- transform_sample_counts(tmp.phy, function(x) x/sum(x)*100)
 tmp.samples <- data.frame(cbind(tax_table(tmp.phy), t(otu_table(tmp.phy))))
@@ -512,7 +556,7 @@ plot.ind <- ggplot(Rdat.m, aes_string(x = "depth", y = "Alpha_diversity", color 
   theme_pubclean() + scale_color_brewer(palette = "Paired")
 suppressMessages(ggsave(filename = "plots/Rcurve_individual.png",plot = plot.ind, device = "png"))
 
-Rdat.m <- Rdat.m %>% unite("Batch_type", c(params$batch, "type"), na.rm = TRUE, remove = FALSE)
+Rdat.m <- Rdat.m %>% filter(type != "Control") %>% unite("Batch_type", c(params$batch, "type"), na.rm = TRUE, remove = FALSE)
 
 # plot per run and sample type
 plot.group <- ggplot(Rdat.m, aes(x = depth, y = Alpha_diversity, color = Batch_type)) + 
@@ -550,7 +594,7 @@ plot.ind <- ggplot(Rdat.m, aes_string(x = "depth", y = "Alpha_diversity", color 
   theme_pubclean() + scale_color_brewer(palette = "Paired")
 suppressMessages(ggsave(filename = "plots/Rcurve_individual_harsh.png",plot = plot.ind, device = "png"))
 
-Rdat.m <- Rdat.m %>% unite("Batch_type", c(params$batch, "type"), na.rm = TRUE, remove = FALSE)
+Rdat.m <- Rdat.m %>% filter(type != "Control") %>% unite("Batch_type", c(params$batch, "type"), na.rm = TRUE, remove = FALSE)
 
 # plot per run and sample type
 plot.group <- ggplot(Rdat.m, aes(x = depth, y = Alpha_diversity, color = Batch_type)) + 
@@ -616,7 +660,7 @@ INDECES <- as.vector(str_split(params$indeces,pattern = "\\|",simplify = TRUE))
 load("R_objects/Phyloseq.Rdata")
 
 # Calculate data
-adat <- Calculate_alpha_div(phy, methods = INDECES)
+adat <- calculate_alpha_diversity(phy, INDECES = INDECES)
 
 # Add data to phyloseq object
 sample_data(phy) <- adat
@@ -629,7 +673,7 @@ save(phy, INDECES, file="R_objects/Phyloseq.Rdata")
 load("R_objects/Phyloseq_harsh.Rdata")
 
 # Calculate data
-adat <- Calculate_alpha_div(phy, methods = INDECES)
+adat <- calculate_alpha_diversity(phy, INDECES = INDECES)
 
 # Add data to phyloseq object
 sample_data(phy) <- adat

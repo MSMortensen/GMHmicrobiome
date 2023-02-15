@@ -20,7 +20,7 @@ Rcurve_data <- function(pobject, ntables=10, step=250,maxdepth = round(unname(qu
   step.seq <- seq(from = 1, to = maxdepth, by = step)
 
   # Calculate alpha diversity
-  rare_tab <- lapply(step.seq,function(k) calculate_alpha_diversity(pobject = pobject, ntables = ntables, depth = k, methods = methods, seedstart = seedstart, verbose = verbose))
+  rare_tab <- lapply(step.seq,function(k) calculate_alpha_diversity(pobject = pobject, ntables = ntables, depth = k, INDECES = methods, seedstart = seedstart, verbose = verbose))
 
   # Format table
   rare_tab <- do.call(rbind, rare_tab)

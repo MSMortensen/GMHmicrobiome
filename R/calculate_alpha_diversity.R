@@ -85,7 +85,7 @@ calculate_alpha_diversity <- function(pobject, ntables=100, depth = round(min(sa
 
     if ("Simpson" %in% INDECES){
       # Calculate observed richness for each rep of sample z
-      adiv <- diversity(rare_tab, index = "simpson")
+      adiv <- vegan::diversity(rare_tab, index = "simpson")
       # Save mean and sd of observed richness
       Alpha_diversity$Simpson[z] <- mean(adiv)
       Alpha_diversity$Simpson_sd[z] <- sd(adiv)
@@ -93,7 +93,7 @@ calculate_alpha_diversity <- function(pobject, ntables=100, depth = round(min(sa
 
     if ("Evenness" %in% INDECES){
       # Calculate observed richness for each rep of sample z
-      sha <- diversity(rare_tab, index = "shannon")
+      sha <- vegan::diversity(rare_tab, index = "shannon")
       obs <- rowSums(rare_tab != 0)
       adiv <- sha/log(obs)
       # Save mean and sd of observed richness
