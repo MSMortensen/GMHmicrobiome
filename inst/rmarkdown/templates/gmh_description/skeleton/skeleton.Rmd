@@ -34,7 +34,6 @@ any statistical analyses.
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 
-library(tidyverse)
 library(GMHmicrobiome)
 library(ggpubr)
 library(kableExtra)
@@ -146,7 +145,7 @@ create a variable that just indicate the project name for all samples.
 
 At phylum level the microbiome counts are as follows
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # load data 
 load("R_objects/Agglomerated.RData")
 params <- readRDS("R_objects/params_description.RDS")
@@ -208,12 +207,17 @@ the data with three steps:
 3.  Change taxa names in plot to a letter and include table of full
     taxonomy
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # Filter by abundance, then rank
 phy.top <- filter_abundance(phy.rel) %>% filter_rank(min.rank = 19)
 
 #Melt data
 dat <- suppressWarnings(psmelt(phy.top))
+
+# Prevent duplicate column names
+colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")] <- paste(colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")], "old", sep = "_")
+
+# Rename relevant columns
 colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
 
 # Sort taxa
@@ -256,7 +260,7 @@ invisible(gc())
 
 At class level the microbiome counts are as follows
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # load data 
 load("R_objects/Agglomerated.RData")
 params <- readRDS("R_objects/params_description.RDS")
@@ -318,12 +322,17 @@ the data with three steps:
 3.  Change taxa names in plot to a letter and include table of full
     taxonomy
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # Filter by abundance, then rank
 phy.top <- filter_abundance(phy.rel) %>% filter_rank(min.rank = 19)
 
 #Melt data
 dat <- suppressWarnings(psmelt(phy.top))
+
+# Prevent duplicate column names
+colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")] <- paste(colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")], "old", sep = "_")
+
+# Rename relevant columns
 colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
 
 # Sort taxa
@@ -366,7 +375,7 @@ invisible(gc())
 
 At order level the microbiome counts are as follows
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # load data 
 load("R_objects/Agglomerated.RData")
 params <- readRDS("R_objects/params_description.RDS")
@@ -428,12 +437,17 @@ the data with three steps:
 3.  Change taxa names in plot to a letter and include table of full
     taxonomy
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # Filter by abundance, then rank
 phy.top <- filter_abundance(phy.rel) %>% filter_rank(min.rank = 19)
 
 #Melt data
 dat <- suppressWarnings(psmelt(phy.top))
+
+# Prevent duplicate column names
+colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")] <- paste(colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")], "old", sep = "_")
+
+# Rename relevant columns
 colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
 
 # Sort taxa
@@ -476,7 +490,7 @@ invisible(gc())
 
 At family level the microbiome counts are as follows
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # load data 
 load("R_objects/Agglomerated.RData")
 params <- readRDS("R_objects/params_description.RDS")
@@ -538,12 +552,17 @@ the data with three steps:
 3.  Change taxa names in plot to a letter and include table of full
     taxonomy
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # Filter by abundance, then rank
 phy.top <- filter_abundance(phy.rel) %>% filter_rank(min.rank = 19)
 
 #Melt data
 dat <- suppressWarnings(psmelt(phy.top))
+
+# Prevent duplicate column names
+colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")] <- paste(colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")], "old", sep = "_")
+
+# Rename relevant columns
 colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
 
 # Sort taxa
@@ -586,7 +605,7 @@ invisible(gc())
 
 At genus level the microbiome counts are as follows
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # load data 
 load("R_objects/Agglomerated.RData")
 params <- readRDS("R_objects/params_description.RDS")
@@ -648,12 +667,17 @@ the data with three steps:
 3.  Change taxa names in plot to a letter and include table of full
     taxonomy
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # Filter by abundance, then rank
 phy.top <- filter_abundance(phy.rel) %>% filter_rank(min.rank = 19)
 
 #Melt data
 dat <- suppressWarnings(psmelt(phy.top))
+
+# Prevent duplicate column names
+colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")] <- paste(colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")], "old", sep = "_")
+
+# Rename relevant columns
 colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
 
 # Sort taxa
@@ -696,7 +720,7 @@ invisible(gc())
 
 At species level the microbiome counts are as follows
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # load data 
 load("R_objects/Agglomerated.RData")
 params <- readRDS("R_objects/params_description.RDS")
@@ -758,12 +782,17 @@ the data with three steps:
 3.  Change taxa names in plot to a letter and include table of full
     taxonomy
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # Filter by abundance, then rank
 phy.top <- filter_abundance(phy.rel) %>% filter_rank(min.rank = 19)
 
 #Melt data
 dat <- suppressWarnings(psmelt(phy.top))
+
+# Prevent duplicate column names
+colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")] <- paste(colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")], "old", sep = "_")
+
+# Rename relevant columns
 colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
 
 # Sort taxa
@@ -815,7 +844,7 @@ that there are no duplicates when combining subject_var and time_var.
 At phylum level the microbiome counts are as follows for each group and
 timepoint
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # load data 
 load("R_objects/Agglomerated.RData")
 params <- readRDS("R_objects/params_description.RDS")
@@ -892,12 +921,17 @@ the data with three steps:
 Following this I will incorporate both time_var and subject_var in the
 plot
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # Filter by abundance, then rank
 phy.top <- filter_abundance(phy.rel, group = params$group_var,includes = "any") %>% filter_rank(group = params$time_var,min.rank = 6,includes = "any")
 
 #Melt data
 dat <- suppressWarnings(psmelt(phy.top))
+
+# Prevent duplicate column names
+colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")] <- paste(colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")], "old", sep = "_")
+
+# Rename relevant columns
 colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
 
 # Sort taxa
@@ -947,7 +981,7 @@ invisible(gc())
 At class level the microbiome counts are as follows for each group and
 timepoint
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # load data 
 load("R_objects/Agglomerated.RData")
 params <- readRDS("R_objects/params_description.RDS")
@@ -1024,12 +1058,17 @@ the data with three steps:
 Following this I will incorporate both time_var and subject_var in the
 plot
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # Filter by abundance, then rank
 phy.top <- filter_abundance(phy.rel, group = params$group_var,includes = "any") %>% filter_rank(group = params$time_var,min.rank = 6,includes = "any")
 
 #Melt data
 dat <- suppressWarnings(psmelt(phy.top))
+
+# Prevent duplicate column names
+colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")] <- paste(colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")], "old", sep = "_")
+
+# Rename relevant columns
 colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
 
 # Sort taxa
@@ -1078,7 +1117,7 @@ invisible(gc())
 At order level the microbiome counts are as follows for each group and
 timepoint
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # load data 
 load("R_objects/Agglomerated.RData")
 params <- readRDS("R_objects/params_description.RDS")
@@ -1156,12 +1195,17 @@ the data with three steps:
 Following this I will incorporate both time_var and subject_var in the
 plot
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # Filter by abundance, then rank
 phy.top <- filter_abundance(phy.rel, group = params$group_var,includes = "any") %>% filter_rank(group = params$time_var,min.rank = 6,includes = "any")
 
 #Melt data
 dat <- suppressWarnings(psmelt(phy.top))
+
+# Prevent duplicate column names
+colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")] <- paste(colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")], "old", sep = "_")
+
+# Rename relevant columns
 colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
 
 # Sort taxa
@@ -1210,7 +1254,7 @@ invisible(gc())
 At family level the microbiome counts are as follows for each group and
 timepoint
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # load data 
 load("R_objects/Agglomerated.RData")
 params <- readRDS("R_objects/params_description.RDS")
@@ -1287,12 +1331,17 @@ the data with three steps:
 Following this I will incorporate both time_var and subject_var in the
 plot
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # Filter by abundance, then rank
 phy.top <- filter_abundance(phy.rel, group = params$group_var,includes = "any") %>% filter_rank(group = params$time_var, min.rank = 6, includes = "any")
 
 #Melt data
 dat <- suppressWarnings(psmelt(phy.top))
+
+# Prevent duplicate column names
+colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")] <- paste(colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")], "old", sep = "_")
+
+# Rename relevant columns
 colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
 
 # Sort taxa
@@ -1341,7 +1390,7 @@ invisible(gc())
 At genus level the microbiome counts are as follows for each group and
 timepoint
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # load data 
 load("R_objects/Agglomerated.RData")
 params <- readRDS("R_objects/params_description.RDS")
@@ -1418,12 +1467,17 @@ the data with three steps:
 Following this I will incorporate both time_var and subject_var in the
 plot
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # Filter by abundance, then rank
 phy.top <- filter_abundance(phy.rel, group = params$group_var,includes = "any") %>% filter_rank(group = params$time_var, min.rank = 6, includes = "any")
 
 #Melt data
 dat <- suppressWarnings(psmelt(phy.top))
+
+# Prevent duplicate column names
+colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")] <- paste(colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")], "old", sep = "_")
+
+# Rename relevant columns
 colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
 
 # Sort taxa
@@ -1472,7 +1526,7 @@ invisible(gc())
 At species level the microbiome counts are as follows for each group and
 timepoint
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # load data 
 load("R_objects/Agglomerated.RData")
 params <- readRDS("R_objects/params_description.RDS")
@@ -1549,12 +1603,17 @@ the data with three steps:
 Following this I will incorporate both time_var and subject_var in the
 plot
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 # Filter by abundance, then rank
 phy.top <- filter_abundance(phy.rel, group = params$group_var,includes = "any") %>% filter_rank(group = params$time_var, min.rank = 6, includes = "any")
 
 #Melt data
 dat <- suppressWarnings(psmelt(phy.top))
+
+# Prevent duplicate column names
+colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")] <- paste(colnames(dat)[colnames(dat) %in% c("Taxa","SampleID")], "old", sep = "_")
+
+# Rename relevant columns
 colnames(dat)[c(1,4)] <- c("Taxa","SampleID")
 
 # Sort taxa

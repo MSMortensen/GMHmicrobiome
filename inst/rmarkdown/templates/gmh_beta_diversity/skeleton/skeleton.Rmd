@@ -576,7 +576,7 @@ If not yet finished, continue with the following steps:
 
 | Analysis               | Template                   | Note                                                               |
 |------------------|---------------------|---------------------------------|
-| Microbiome description | GMH_description            | Statistical test of sample_data variables, incl alpha diversity    |
+| Microbiome description | GMH_description            | Compositional statistics and plots                                 |
 | Statistical testing    | GMH_test_variables         | Statistical test and visualization of alpha diversity and metadata |
 | Differential abundance | GMH_differential_abundance | Test differential abundance of taxa against sample variables       |
 

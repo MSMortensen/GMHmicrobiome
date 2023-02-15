@@ -12,7 +12,7 @@ sort_taxa <- function(dat) {
   tax.use <- tax.levels[tax.levels %in% colnames(dat)]
 
   # Sort data
-  dat.ordered <- dat %>% arrange_at(tax.use)
+  dat.ordered <- dat %>% select(all_of(tax.use)) %>% distinct() %>% arrange_at(tax.use)
 
   dat.ordered <- as.data.frame(dat.ordered)
 
@@ -20,7 +20,7 @@ sort_taxa <- function(dat) {
   new.levels <- as.character(unique(dat.ordered[,last(tax.use)]))
 
 
-  dat.ordered[,last(tax.use)] <- factor(dat.ordered[,last(tax.use)], levels = new.levels)
+  dat[,last(tax.use)] <- factor(dat[,last(tax.use)], levels = new.levels)
 
-  return(dat.ordered)
+  return(dat)
 }
