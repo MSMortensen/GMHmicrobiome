@@ -30,10 +30,12 @@ filter_abundance <- function(pobject, group = NA, min.abundance=0.01, includes =
     dat <- data.frame(sample_data(pobject))
 
     # set groups
-    vgroup <- unique(dat[,group])
+    vgroup <- as.character(unique(dat[,group]))
 
     # create count table
-    counts <- data.frame(row.names = row.names(otu.table))
+    counts <- data.frame(matrix(nrow = nrow(otu.table), ncol = length(vgroup)))
+    row.names(counts) <- row.names(otu.table)
+    colnames(counts) <- vgroup
 
     for (i in seq(length(vgroup))) counts[,vgroup[i]] <- rowMeans(otu.table[,dat[,group]==vgroup[i]])
 

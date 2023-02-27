@@ -32,6 +32,10 @@ filter_rank <- function(pobject, group = NA, min.rank = 10, includes = "any"){
     vgroup <- as.character(unique(dat[,group]))
 
     # create count table
+    counts <- data.frame(matrix(nrow = nrow(otu.table), ncol = length(vgroup)))
+    row.names(counts) <- row.names(otu.table)
+    colnames(counts) <- vgroup
+
     counts <- data.frame(row.names = row.names(otu.table))
     for (i in seq(length(vgroup))) counts[,vgroup[i]] <- order(rowMeans(otu.table[,dat[,group]==vgroup[i]]), decreasing = TRUE)
 

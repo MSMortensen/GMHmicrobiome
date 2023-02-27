@@ -34,7 +34,11 @@ filter_prevalence <- function(pobject, group = NA, min.samples = (length(sample_
     vgroup <- as.character(unique(dat[,group]))
 
     # create count table
-    counts <- data.frame(row.names = row.names(otu.table))
+    counts <- data.frame(matrix(nrow = nrow(otu.table), ncol = length(vgroup)))
+    row.names(counts) <- row.names(otu.table)
+    colnames(counts) <- vgroup
+
+
     for (i in seq(length(vgroup))) counts[,vgroup[i]] <- rowSums(otu.table[,dat[,group]==vgroup[i]])
 
     if (includes == "any") {

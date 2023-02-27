@@ -961,8 +961,7 @@ p <- ggplot(dat.sort, aes(x = .data[[params$subject_var]],
 p
 
 # print tax table
-# print tax table
-tax <- dat.sort %>% distinct(Taxa, .keep_all = T)%>% select(Taxa, Kingdom, Phylum)
+tax <- dat.sort %>% distinct(Taxa, .keep_all = T)%>% select(Taxa, Kingdom, Phylum) %>% arrange(Taxa) %>% arrange(Taxa)
 
 
 kable(tax,digits = 2,caption = paste("Taxa plotted", sep = " ")) %>%
@@ -1098,8 +1097,7 @@ p <- ggplot(dat.sort, aes(x = .data[[params$subject_var]],
 p
 
 # print tax table
-# print tax table
-tax <- dat.sort %>% distinct(Taxa,.keep_all = T) %>% select(Taxa, Kingdom, Phylum, Class)
+tax <- dat.sort %>% distinct(Taxa,.keep_all = T) %>% select(Taxa, Kingdom, Phylum, Class) %>% arrange(Taxa) %>% arrange(Taxa)
 
 kable(tax,digits = 2,caption = paste("Taxa plotted", sep = " ")) %>%
   kable_classic(full_width = F, position = "left")
@@ -1235,8 +1233,7 @@ p <- ggplot(dat.sort, aes(x = .data[[params$subject_var]],
 p
 
 # print tax table
-# print tax table
-tax <- dat.sort %>% distinct(Taxa,.keep_all = T) %>% select(Taxa, Kingdom, Phylum, Class, Order)
+tax <- dat.sort %>% distinct(Taxa,.keep_all = T) %>% select(Taxa, Kingdom, Phylum, Class, Order) %>% arrange(Taxa) %>% arrange(Taxa)
 
 kable(tax,digits = 2,caption = paste("Taxa plotted", sep = " ")) %>%
   kable_classic(full_width = F, position = "left")
@@ -1371,8 +1368,7 @@ p <- ggplot(dat.sort, aes(x = .data[[params$subject_var]],
 p
 
 # print tax table
-# print tax table
-tax <- dat.sort %>% distinct(Taxa,.keep_all = T) %>% select(Taxa, Kingdom, Phylum, Class, Order,Family)
+tax <- dat.sort %>% distinct(Taxa,.keep_all = T) %>% select(Taxa, Kingdom, Phylum, Class, Order,Family) %>% arrange(Taxa) %>% arrange(Taxa)
 
 kable(tax,digits = 2,caption = paste("Taxa plotted", sep = " ")) %>%
   kable_classic(full_width = F, position = "left")
@@ -1507,8 +1503,7 @@ p <- ggplot(dat.sort, aes(x = .data[[params$subject_var]],
 p
 
 # print tax table
-# print tax table
-tax <- dat.sort %>% distinct(Taxa,.keep_all = T) %>% select(Taxa, Kingdom, Phylum, Class, Order,Family,Genus)
+tax <- dat.sort %>% distinct(Taxa,.keep_all = T) %>% select(Taxa, Kingdom, Phylum, Class, Order,Family,Genus) %>% arrange(Taxa) %>% arrange(Taxa)
 
 kable(tax,digits = 2,caption = paste("Taxa plotted", sep = " ")) %>%
   kable_classic(full_width = F, position = "left")
@@ -1643,8 +1638,7 @@ p <- ggplot(dat.sort, aes(x = .data[[params$subject_var]],
 p
 
 # print tax table
-# print tax table
-tax <- dat.sort %>% distinct(Taxa,.keep_all = T) %>% select(Taxa, Kingdom, Phylum, Class, Order,Family,Genus,Species)
+tax <- dat.sort %>% distinct(Taxa,.keep_all = T) %>% select(Taxa, Kingdom, Phylum, Class, Order,Family,Genus,Species) %>% arrange(Taxa) %>% arrange(Taxa)
 
 kable(tax,digits = 2,caption = paste("Taxa plotted", sep = " ")) %>%
   kable_classic(full_width = F, position = "left")
