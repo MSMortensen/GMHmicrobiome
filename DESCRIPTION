@@ -29,7 +29,8 @@ Imports:
     rmdformats,
     shiny,
     skimr,
-    vegan
+    vegan,
+    AICcmodavg
 Remotes:
     Russel88/DAtest,
     daattali/ggExtra

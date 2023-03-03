@@ -171,7 +171,7 @@ params <- readRDS("R_objects/params_betadiv.RDS")
 load("R_objects/Phyloseq_betadiv.Rdata")
 
 # transform counts
-phy.ra <- transform_sample_counts(phy, function(x) x/sum(x))
+phy.ra <- transform_sample_counts(phy.clean, function(x) x/sum(x))
 
 # Calculate Bray-Curtis dissimilarities
 bray.dist <- distance(phy.ra, method = "bray",)
