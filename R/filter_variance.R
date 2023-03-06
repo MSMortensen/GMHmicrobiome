@@ -30,7 +30,7 @@ filter_variance <- function(pobject, taxa.lim = 0.9){
 
   # Create list of ASVs to merge
   otu.list <- sum.dat %>%
-    filter(Rank <=filt.tax) %>%
+    filter(Rank > filt.tax) %>%
     pull(ASV)
 
   if(any("Others" %in% taxa_names(pobject))) otu.list <- c(otu.list,"Others")
