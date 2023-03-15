@@ -1,4 +1,4 @@
 name: GMH_test_variables
 description: >
-   A template for choosing and applying the correct statistical methods to test sample variables
+   A template for performing statistical test of project data. Code should be copied from "GMH_test_variables_code"
 create_dir: FALSE

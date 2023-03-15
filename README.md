@@ -41,12 +41,20 @@ finalised, but this will be updated when they are added.
   *Output*: A structured .html document with all tables and plots.
 
 - **GMH_test_variables** (Lacks visualization part)  
-  *Input*: One phyloseq objects from **GMH_import.**  
-  *Description*: Guide to identify and apply the correct statistical
-  test differences and correlations between alpha diversity and project
-  variables.  
+  *Input*: One phyloseq objects from **GMH_import** or a general data
+  file.  
+  *Description*: Organise data and structure analyses of predictor and
+  outcome variables, using the statistical methods defined in
+  **GMH_test_variables_code**.  
   *Output*: Relevant plots and a structured .html document showing the
   statistical analyses.
+
+- **GMH_test_variables_code** (Lacks visualization part)  
+  *Input*: None  
+  *Description*: Guide to identify and apply the correct statistical
+  test differences and correlations between predictor variables
+  (incl. alpha diversity) and outcome variables.  
+  *Output*: Code chunks to insert in **GMH_test_variables**.
 
 - **GMH_beta_diversity**  
   *Input*: One phyloseq objects from **GMH_import.**  
@@ -70,8 +78,8 @@ The package contains the following functions:
 
 - **Project initiation**  
   `initiate_GMH_project()`: Creates the folder structure used by the
-  script in the the current working directory. It can also create copies
-  of the five templates with generic names.
+  script in the the current working directory. It can also create the
+  package’s Rmarkdown templates with generic names.
 
 - **Rarefaction and alpha diversity**  
   `calculate_alpha_diversity()`: Calculates alpha diversity as the mean
@@ -113,15 +121,16 @@ remotes::install_github("MSMortensen/GMHmicrobiome")
 I recommend starting with a clean RStudio project and then follow the
 steps below:
 
-- Run `initiate_GMH_project(files = FALSE)` to create the necessary
-  folders.
+- Run `initiate_GMH_project()` to create the necessary folders and
+  generic templates.
 
 - Copy input data to the input folder
 
 - Import data
 
   - Create a new Rmarkdown file from the **GMH_import** template  
-    (File \> New File \> R Markdown … \> From Template \> GMH_import).
+    (File \> New File \> R Markdown … \> From Template \> GMH_import).  
+    \> *SKIP IF FILES WERE CREATED*
 
   - Modify the template as necessary and when all works, knit the
     Rmarkdown.
@@ -130,7 +139,8 @@ steps below:
 
   - Create a new Rmarkdown file from the **GMH_import** template  
     (File \> New File \> R Markdown … \> From Template \>
-    GMH_description).
+    GMH_description).  
+    \> *SKIP IF FILES WERE CREATED*
 
   - Modify the template as necessary and when all works, knit the
     Rmarkdown.

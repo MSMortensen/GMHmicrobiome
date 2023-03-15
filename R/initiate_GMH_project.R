@@ -21,6 +21,7 @@ initiate_GMH_project <- function(folders = TRUE, files = TRUE, overwrite = FALSE
     file.copy(system.file("rmarkdown/templates/gmh_import/skeleton","skeleton.Rmd", package = "GMHmicrobiome"), "GMH_1_import.Rmd")
     file.copy(system.file("rmarkdown/templates/gmh_description/skeleton","skeleton.Rmd", package = "GMHmicrobiome"), "GMH_2_description.Rmd")
     file.copy(system.file("rmarkdown/templates/gmh_test_variables/skeleton","skeleton.Rmd", package = "GMHmicrobiome"), "GMH_3_test_variables.Rmd")
+    file.copy(system.file("rmarkdown/templates/gmh_test_variables_code/skeleton","skeleton.Rmd", package = "GMHmicrobiome"), "GMH_3x_test_variables_code.Rmd")
     file.copy(system.file("rmarkdown/templates/gmh_beta_diversity/skeleton","skeleton.Rmd", package = "GMHmicrobiome"), "GMH_4_betadiversity.Rmd")
     file.copy(system.file("rmarkdown/templates/gmh_differential_abundance/skeleton","skeleton.Rmd", package = "GMHmicrobiome"), "GMH_5_differential_abundance.Rmd")
   }
@@ -30,6 +31,7 @@ initiate_GMH_project <- function(folders = TRUE, files = TRUE, overwrite = FALSE
     if (!file.exists("GMH_1_import.Rmd")) file.copy(system.file("rmarkdown/templates/gmh_import/skeleton","skeleton.Rmd", package = "GMHmicrobiome"), "GMH_1_import.Rmd")
     if (!file.exists("GMH_2_description.Rmd")) file.copy(system.file("rmarkdown/templates/gmh_description/skeleton","skeleton.Rmd", package = "GMHmicrobiome"), "GMH_2_description.Rmd")
     if (!file.exists("GMH_3_test_variables.Rmd")) file.copy(system.file("rmarkdown/templates/gmh_test_variables/skeleton","skeleton.Rmd", package = "GMHmicrobiome"), "GMH_3_test_variables.Rmd")
+    if (!file.exists("GMH_3x_test_variables_code.Rmd")) file.copy(system.file("rmarkdown/templates/gmh_test_variables_code/skeleton","skeleton.Rmd", package = "GMHmicrobiome"), "GMH_3x_test_variables_code.Rmd")
     if (!file.exists("GMH_4_betadiversity.Rmd")) file.copy(system.file("rmarkdown/templates/gmh_betadiversity/skeleton","skeleton.Rmd", package = "GMHmicrobiome"), "GMH_4_betadiversity.Rmd")
     if (!file.exists("GMH_5_differential_abundance.Rmd")) file.copy(system.file("rmarkdown/templates/gmh_differential_abundance/skeleton","skeleton.Rmd", package = "GMHmicrobiome"), "GMH_5_differential_abundance.Rmd")
   }

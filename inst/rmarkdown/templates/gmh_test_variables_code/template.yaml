@@ -1,0 +1,4 @@
+name: GMH_test_variables_code
+description: >
+   Template with theoretical explanation of statistical tests, a guide to choosing the correct method, and the necessary code to perform the test.
+create_dir: FALSE
