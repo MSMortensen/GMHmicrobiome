@@ -17,6 +17,7 @@ Imports:
     DAtest,
     cowplot (>= 1.0.0),
     decontam,
+    markdown,
     ggpubr,
     ggExtra,
     ggsci,
@@ -29,8 +30,7 @@ Imports:
     rmdformats,
     shiny,
     skimr,
-    vegan,
-    AICcmodavg
+    vegan
 Remotes:
     Russel88/DAtest,
     daattali/ggExtra

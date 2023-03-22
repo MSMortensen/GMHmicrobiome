@@ -112,8 +112,18 @@ The package contains the following functions:
 
 ``` r
 if (!requireNamespace("remotes")) install.packages("remotes")
+if (!requireNamespace("BiocManager")) install.packages("BiocManager")
 
 remotes::install_github("MSMortensen/GMHmicrobiome")
+```
+
+For full functionality of the DAtest package also install the following packages
+
+```r
+BiocManager::install(c("DESeq2","limma","edgeR","metagenomeSeq","baySeq","ALDEx2","impute","ANCOMBC"))
+
+install.packages(c("samr","pscl","statmod","mvabund","eulerr","lsmeans"))
+
 ```
 
 ## How to use

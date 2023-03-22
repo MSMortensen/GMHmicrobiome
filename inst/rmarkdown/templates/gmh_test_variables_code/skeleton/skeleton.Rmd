@@ -218,149 +218,6 @@ There can be cases where we need to perform tests that are specific, but complex
 
 -   The `-` operator removes the specified terms, hence `(a+b+c)^2 - a:b` is identical to `a + b + c + b:c + a:c`. It can also used to remove the intercept term: when fitting a linear model `y ~ x - 1` specifies a line through the origin. A model with no intercept can be also specified as `y ~ x + 0 or y ~ 0 + x`.
 
-# TEST ASSUMPTIONS
-
-## TEST INDEPENDENCE
-
-Test of independence should be robust to differences between subsets, so this has been included for the data set overall in the `GMH_test_variables` Rmarkdown.
-
-## NORMALITY OF DATA
-
-This section draws heavily on the free statistical course [**STATISTICAL TESTS AND ASSUMPTIONS**](https://www.datanovia.com/en/courses/statistical-tests-and-assumptions/).
-
-An important factor in selecting the correct statistical test is to determine if your data follows a normal distribution (the normality of the data). This section takes you through how to check the normality of a data using Shapiro-Wilk test and visual inspection of QQ-plots.
-
-> If your sample size is greater than 50, the normal QQ plot is preferred because at larger sample sizes the Shapiro-Wilk test becomes very sensitive even to a minor deviation from normality.
-
-Consequently, we should not rely on only one approach for assessing the normality. A better strategy is to combine visual inspection and statistical test.
-
-> Normality test should be done for each variable with grouping included. The code chunk below tests for up to three variables. To use for two, overlap facet and color var and to use with one, remove the faceting lines (just a variable in Shapiro-Wilk test)
-
-```{r assumption-normality, eval = TRUE,warning=FALSE}
-# Set variables to test
-VAR = "Observed"
-COLOR = "treatment"
-FACET.VARS = c("van","day") 
-
-# Q-Q plot
-qq.plot <- ggqqplot(dat, 
-                    x = VAR, 
-                    facet.by = FACET.VARS,
-                    color = COLOR,
-                    palette = "jco",
-                    legend = "bottom")
-
-# Normal distribution
-norm.plot <- ggdensity(dat,
-                       x = VAR,
-                       facet.by = FACET.VARS,
-                       color = COLOR,
-                       palette = "jco",
-                       legend = "bottom",
-                       add = "mean") + 
-    stat_overlay_normal_density(color = "red", linetype = "dashed")
-
-# Create common plot
-ggarrange(norm.plot, qq.plot, common.legend = TRUE,legend = "bottom",ncol = 1)
-
-# Run Shapiro-Wilk test
-dat %>% 
-  group_by(.dots = c(COLOR,FACET.VARS)) %>%
-  shapiro_test(vars = VAR)
-
-```
-
-## HOMOSCEDASTICITY
-
-Homoscedasticity (homogeneity of variance) is when the variance in the data is stable between groups, or in relationship to a quantitative variable. Most statistical test leans on the assumption that the variance in similar between groups or along a variable. If one group has much more variation than others (heteroscedasticity), it will limit the test's effectiveness.
-
-There are different variance tests that can be used to assess the equality of variances. These include:
-
--   **F-test**: Compare the variances of two groups. The data must be normally distributed.
-
--   **Bartlett's test**: Compare the variances of two or more groups. The data must be normally distributed.
-
--   **Levene's test**: A robust alternative to the Bartlett's test that is less sensitive to departures from normality.
-
--   **Fligner-Killeen's test**: a non-parametric test which is very robust against departures from normality.
-
-This template will include all, but **F-test** and **Bartlett's test** can only be used if the above test showed normally distributed data.
-
-I recommend using **Levene's test** as a first choice and **Filgner-Killeen's test** if data is far from normally distributed.
-
-This chunk sets the variables
-
-```{r assumption-homogeneity-input, eval = TRUE}
-
-VAR = "Observed"
-GROUP = c("treatment","day", "pfos", "van")
-
-```
-
-> I suggest running the following individually for each combination of predictor/outcome
-
-```{r assumption-homogeneity-F-test, eval=TRUE}
-if (length(GROUP) == 1) {
-  FORMULA <- as.formula(paste(VAR,"pfos", sep = " ~ "))
-  var.test(FORMULA, data = dat)
-} else {
-  tibble(variable = VAR,group = GROUP) %>% 
-    rowwise %>% 
-    mutate(group_unique = n_distinct(dat[[group]]),
-           formula = ifelse(group_unique == 2,
-                            paste(variable,group, sep = " ~ "),
-                            "Group does not have 2 levels"),
-           F_test = ifelse(group_unique == 2,
-                            list(fligner.test(x = dat[[variable]], g = dat[[group]])),
-                            list(NA)),
-           F_test_pval = ifelse(group_unique == 2,
-                                 F_test$p.value,
-                                 as.numeric(NA))
-      )
-}
-
-```
-
-```{r assumption-homogeneity-bartletts, eval=TRUE}
-
-# Prepare formula
-if (length(GROUP) == 1) {
-  FORMULA <- as.formula(paste(VAR,"treatment", sep = " ~ "))
-} else FORMULA <- as.formula(paste(VAR,paste0("interaction(",paste(GROUP, collapse = ","),")"), sep = " ~ "))
-
-# Run test
-bartlett.test(FORMULA, data = dat)
-
-```
-
-```{r assumption-homogeneity-levene, eval=TRUE}
- 
-# Prepare formula
-GROUP.F <- ifelse(length(GROUP) > 1, paste(GROUP, collapse = "*"), GROUP)
-FORMULA <- as.formula(paste(VAR,GROUP.F, sep = " ~ "))
-
-# Run test
-dat %>% levene_test(FORMULA)
-```
-
-```{r assumption-homogeneity-filgner-killeen, eval=TRUE}
-
-if (length(GROUP) == 1) {
-  FORMULA <- as.formula(paste(VAR,"treatment", sep = " ~ "))
-  fligner.test(FORMULA, data = dat)
-} else {
-  tibble(variable = VAR,group = GROUP) %>% 
-    rowwise %>% 
-    mutate(fligner_test = list(
-      fligner.test(x = dat[[variable]], g = dat[[group]])
-      ),
-      fligner_pval = fligner_test$p.value
-      )
-}
-```
-
-> A significant p-value means that the variance in NOT homogeneous between groups.
-
 # PERFORM TEST
 
 This sections contains code blocks for each of the included tests, run the relevant one(s).
@@ -886,7 +743,7 @@ A significant Kruskal-Wallis test is generally followed up by Dunn's test to ide
 ```{r}
 # pairwise comparisons
 pwc <- dat.clean %>% 
-  dunn_test(FORMULA, p.adjust.method = "bonferroni") 
+  dunn_test(FORMULA, p.adjust.method = "fdr") 
 pwc
 ```
 
@@ -929,7 +786,7 @@ A statistically significant simple main effect can be followed up by multiple pa
 library(emmeans)
 pwc <- dat.clean %>% 
   group_by(!!sym(PREDICTOR[2])) %>%
-  emmeans_test(as.formula(paste(OUTCOME, PREDICTOR[1], sep = " ~ ")), p.adjust.method = "bonferroni") 
+  emmeans_test(as.formula(paste(OUTCOME, PREDICTOR[1], sep = " ~ ")), p.adjust.method = "fdr") 
 pwc
 ```
 
@@ -937,13 +794,13 @@ pwc
 If the two-way interaction is not statistically significant, you need to consult the main effect for each of the two variables (`r PREDICTOR[1]` and `r PREDICTOR[2]`) in the ANOVA output.
 
 **Compute pairwise comparisons for significant variables**\
-Perform pairwise comparisons between education level groups to determine which groups are significantly different. Bonferroni adjustment is applied. This analysis can be done using simply the function emmeans_test(). You need to specify the overall model, from which the overall degrees of freedom are to be calculated. This will make it easier to detect any statistically significant differences if they exist.
+Perform pairwise comparisons between education level groups to determine which groups are significantly different. fdr adjustment is applied. This analysis can be done using simply the function emmeans_test(). You need to specify the overall model, from which the overall degrees of freedom are to be calculated. This will make it easier to detect any statistically significant differences if they exist.
 
 ```{r}
 model <- lm(FORMULA, data = dat.clean)
 
 dat.clean %>% 
-  emmeans_test(as.formula(paste(OUTCOME, PREDICTOR[2], sep = " ~ ")), p.adjust.method = "bonferroni",
+  emmeans_test(as.formula(paste(OUTCOME, PREDICTOR[2], sep = " ~ ")), p.adjust.method = "fdr",
     model = model
     )
 
@@ -1011,7 +868,7 @@ A statistically significant simple simple main effect can be followed up by mult
 library(emmeans)
 pwc <- dat.clean %>%
   group_by(across(all_of(PREDICTOR[2:3]))) %>%
-  emmeans_test(as.formula(paste(OUTCOME, PREDICTOR[1], sep = " ~ ")), p.adjust.method = "bonferroni") %>%
+  emmeans_test(as.formula(paste(OUTCOME, PREDICTOR[1], sep = " ~ ")), p.adjust.method = "fdr") %>%
   select(-df, -statistic, -p) # Remove details
 # Show comparison results for male at high risk
 pwc 
@@ -1116,7 +973,7 @@ get_anova_table(res.aov)
 
 ##### POST-HOC TEST
 
-You can perform multiple pairwise paired t-tests between the levels of the within-subjects factor (here time). P-values are adjusted using the Bonferroni multiple testing correction method.
+You can perform multiple pairwise paired t-tests between the levels of the within-subjects factor (here time). P-values are adjusted using the fdr multiple testing correction method.
 
 ```{r}
 # pairwise comparisons
@@ -1124,7 +981,7 @@ pwc <- dat.clean %>%
   pairwise_t_test(
     as.formula(paste(OUTCOME,TIME, sep = " ~ ")), 
     paired = TRUE,
-    p.adjust.method = "bonferroni"
+    p.adjust.method = "fdr"
     )
 pwc
 ```
@@ -1156,7 +1013,7 @@ Perform multiple pairwise-comparison between groups, to identify which pairs of 
 ```{r}
 pwc <- dat.clean %>%  
   wilcox_test(as.formula(paste(OUTCOME, TIME, sep = " ~ ")),
-              paired = TRUE, p.adjust.method = "bonferroni")
+              paired = TRUE, p.adjust.method = "fdr")
 pwc
 ```
 
@@ -1318,7 +1175,7 @@ one.way <- dat.clean %>%
   group_by(!!sym(TIME)) %>%
   anova_test(dv = !!sym(OUTCOME), wid = !!sym(SUBJECT), between = !!sym(PREDICTOR)) %>%
   get_anova_table() %>%
-  adjust_pvalue(method = "bonferroni")
+  adjust_pvalue(method = "fdr")
 one.way
 ```
 
@@ -1326,7 +1183,7 @@ one.way
 # Pairwise comparisons between group levels
 pwc <- dat.clean %>%
   group_by(!!sym(TIME)) %>%
-  pairwise_t_test(as.formula(paste(OUTCOME,PREDICTOR,sep = " ~ ")), p.adjust.method = "bonferroni")
+  pairwise_t_test(as.formula(paste(OUTCOME,PREDICTOR,sep = " ~ ")), p.adjust.method = "fdr")
 pwc
 
 ```
@@ -1339,7 +1196,7 @@ one.way2 <- dat.clean %>%
   group_by(!!sym(PREDICTOR)) %>%
   anova_test(dv = !!sym(OUTCOME), wid = !!sym(SUBJECT), within = !!sym(TIME)) %>%
   get_anova_table() %>%
-  adjust_pvalue(method = "bonferroni")
+  adjust_pvalue(method = "fdr")
 one.way2
 ```
 
@@ -1348,20 +1205,20 @@ one.way2
 # Paired t-test is used because we have repeated measures by time
 pwc2 <- dat.clean %>%
   group_by(!!sym(PREDICTOR)) %>%
-  pairwise_t_test(as.formula(paste(OUTCOME,TIME,sep = " ~ ")), p.adjust.method = "bonferroni")
+  pairwise_t_test(as.formula(paste(OUTCOME,TIME,sep = " ~ ")), p.adjust.method = "fdr")
 pwc2
 ```
 
 **Procedure for non-significant two-way interaction**\
 If the interaction is not significant, you need to interpret the main effects for each of the two variables: group and \`time. A significant main effect can be followed up with pairwise comparisons.
 
-Perform multiple pairwise paired t-tests for the time variable, ignoring group. P-values are adjusted using the Bonferroni multiple testing correction method.
+Perform multiple pairwise paired t-tests for the time variable, ignoring group. P-values are adjusted using the fdr multiple testing correction method.
 
 ```{r}
 dat.clean %>%
   pairwise_t_test(
     as.formula(paste(OUTCOME,TIME,sep = " ~ ")), paired = TRUE, 
-    p.adjust.method = "bonferroni"
+    p.adjust.method = "fdr"
   )
 ```
 
@@ -1371,7 +1228,7 @@ You can perform a similar analysis for the PREDICTOR variable.
 dat.clean %>%
   pairwise_t_test(
     as.formula(paste(OUTCOME,PREDICTOR,sep = " ~ ")),
-    p.adjust.method = "bonferroni"
+    p.adjust.method = "fdr"
   )
 
 ```
