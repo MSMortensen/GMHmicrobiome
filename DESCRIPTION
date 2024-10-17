@@ -34,5 +34,6 @@ Imports:
 Remotes:
     Russel88/DAtest,
     daattali/ggExtra
-RoxygenNote: 7.2.3
+	phytomosaic/ecole
+RoxygenNote: 7.3.2
 BugReports: https://github.com/MSMortensen/GMHmicrobiome/issues

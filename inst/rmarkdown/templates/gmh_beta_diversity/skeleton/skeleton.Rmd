@@ -43,6 +43,7 @@ library(phyloseq)
 library(cowplot)
 library(ggExtra)
 library(vegan)
+library(ecole)
 
 # save parameters
 saveRDS(params, "R_objects/params_betadiv.RDS")
@@ -112,7 +113,7 @@ There are many different algorithms that can be used to calculate beta diversity
 
 The unique fraction metric, or UniFrac, measures the phylogenetic distance between sets of taxa in a phylogenetic tree as the fraction of the branch length of the tree that leads to descendants from either one environment or the other, but not both [(Lozupone & Knight, 2005)](https://doi.org/10.1128/AEM.71.12.8228-8235.2005). This metric is sensitive to sequencing depth, so it is required to use a rarefied phyloseq object The UniFrac algorithm requires a rooted tree, so if ASVs has been removed from the raw da the tree should be rerooted manually, else a random ASV will be chosen as root.
 
-```{r calc-unif, eval=FALSE, echo=TRUE}
+```{r, eval=FALSE, echo=TRUE}
 
 # load
 params <- readRDS("R_objects/params_betadiv.RDS")
@@ -138,7 +139,7 @@ invisible(gc())
 
 The unique fraction metric, or UniFrac, measures the phylogenetic distance between sets of taxa in a phylogenetic tree as the fraction of the branch length of the tree that leads to descendants from either one environment or the other, but not both [(Lozupone & Knight, 2005)](https://doi.org/10.1128/AEM.71.12.8228-8235.2005). Weighted UniFrac takes the abundance of each ASV into account instead of just presence/absence, which means that it will not be sensitive to sequencing depth. The UniFrac algorithm requires a rooted tree, so if ASVs has been removed from the raw da the tree should be rerooted manually, else a random ASV will be chosen as root.
 
-```{r calc-wunif, eval=FALSE, echo=TRUE}
+```{r, eval=FALSE, echo=TRUE}
 
 # load
 params <- readRDS("R_objects/params_betadiv.RDS")
@@ -164,7 +165,7 @@ invisible(gc())
 
 Bray-Curtis dissimilarity index (as implemented by the vegan package) is the sum of abundance difference for each species/ASV, divided by theoretical maximum difference between the samples if no ASV overlapped. The formula used is: $$d_{jk} = \frac{\sum|n_{ij}-n_{ik}|}{\sum(n_{ij}+n_{ik})}$$ Bray-Curtis dissimilarity is not a true distance metric as it does not adhere to the [triangle inequality](https://en.wikipedia.org/wiki/Triangle_inequality), but is often used to compare microbiomes. Bray-Curtis dissimilarities are based on the assumption that measurements are taken from equal areas, so differences in total counts between samples will bias the metric. As differences in sequences depth is due to differences in the lab procedures and not biological differences, we should transform our counts to relative abundances before calculating Bray-Curtis dissimilarities. By transforming the data to abundances no data is lost, but rarefied data can also be used.
 
-```{r calc-bray, eval=FALSE, echo=TRUE}
+```{r, eval=FALSE, echo=TRUE}
 
 # load
 params <- readRDS("R_objects/params_betadiv.RDS")
@@ -197,7 +198,7 @@ Additionally, this function can be used to find the dissimilarity between two se
 $$d(A,B) = 1 - J(A,B)$$
 > We will be calculating binary Jaccard dissimilarity
 
-```{r calc-jac, eval=FALSE, echo=TRUE}
+```{r, eval=FALSE, echo=TRUE}
 
 # load
 params <- readRDS("R_objects/params_betadiv.RDS")
@@ -223,7 +224,7 @@ invisible(gc())
 
 Aitchison distance (1986) and robust Aitchison distance [(Martino et al. 2019)](https://journals.asm.org/doi/10.1128/mSystems.00016-19) are metrics that deal with compositional data. The Aitchison distance is a dissimilarity measure calculated as the Euclidean distance between observations (samples) after performing a centered log ratio (“clr”) transformation. Aitchison distance has been said to outperform Jensen-Shannon divergence and Bray-Curtis dissimilarity, due to a better stability to subsetting and aggregation, and it being a proper distance (Aitchison et al., 2000).
 
-```{r calc-ait, eval=FALSE, echo=TRUE}
+```{r, eval=FALSE, echo=TRUE}
 
 # load
 params <- readRDS("R_objects/params_betadiv.RDS")
@@ -255,7 +256,7 @@ Beta diversity is generally visualized by a NMDS (non metric multidimensional sc
 ## LOAD DATA
 First step is to  load the data and define the which variable will be tested in the following blocks.
 
-```{r load-betadiv-a, eval=TRUE, echo=TRUE}
+```{r, eval=TRUE, echo=TRUE}
 
 params <- readRDS("R_objects/params_betadiv.RDS")
 
@@ -320,7 +321,7 @@ The data from an ordination can be plotted in many different ways. Here I will l
 
 For PCoA each axis represent a specific amount of the overall variation in the dataset. this information can easily be extracted and plotted.
 
-```{r plot-eigenvalues-a, eval=TRUE, echo=TRUE}
+```{r, eval=TRUE, echo=TRUE}
 
 # Extract eigen values
 eigen <- pcoa.used$values
@@ -344,7 +345,7 @@ suppressMessages(ggsave(plot = p.eigen, filename = paste0("plots/bdiv_PCoA_axis"
 Phyloseq has a plotting function, but it is a bit limited in some of the settings. Therefore, I recommend to use the function to create a table of the data and then make your own plots
 The first plot highlights the location of each group on the first 5 axis. Based on this an optimal set of axis can be chosen for the following ordination plot.
 
-```{r ordination-find-axis-a, eval=TRUE}
+```{r, eval=TRUE}
 # Create plots of eigenvalues for PCoA plots
 pcoa.tab <- plot_ordination(phy, pcoa.used,axes = 1:5,justDF = TRUE)
 nmds.tab <- plot_ordination(phy, nmds.used,axes = 1:5,justDF = TRUE)
@@ -371,7 +372,7 @@ ggplot(axis.tab, aes_string(x = "ordination", y = "position", fill = VAR)) +
 
 based on the best separation on the axis in the plot above I have chosen to use Axis 1 and 2 for the ordination
 
-```{r plot-ordination-a, eval=TRUE}
+```{r, eval=TRUE}
 # Create NMDS plot
 plot.nmds <- ggplot(ord.tab[ord.tab$ordination == "nmds",], aes_string(x = "Axis.1", y = "Axis.2", color = VAR, group = VAR)) +
   geom_point() + 
@@ -426,7 +427,7 @@ The function partitions sums of squares of a multivariate data set, and they are
 
 First we will test the beta diversity dispertion to determine whether any differences in dispertion might cause any PERMANOVA differences.
 
-```{r betadisp-a, eval=TRUE}
+```{r, eval=TRUE}
 
 # Calculate betadispertion
 bdisp <- betadisper(dist.used, mdat[,VAR])
@@ -451,10 +452,22 @@ When plotting the TukeyHSD, the y-axis is terribly formatted, but ordered simila
 
 > The formulation of the adonis2 test **MUST** be updated manually!
 
-```{r permanova-a, eval=TRUE}
+```{r, eval=TRUE}
 
 # Perform test
 adonis2(dist.used ~ van*pfos, data = mdat, strata = mdat$day, permutations = 999, na.action = na.omit)
+
+```
+
+### RUN PAIRWISE ADONIS
+
+You can run a PERMANOVA for each pairwise combination of groups in a variable we use the `permanova_pairwise` from the package \code{ecole}.
+The function can only test one variable at the time, but does identify differences between each pair of groups.
+
+```{r, eval = TRUE}
+
+# Perform pairwise test
+permanova_pairwise(dist.used, grp = mdat[,VAR])
 
 ```
 
@@ -478,7 +491,7 @@ fit.pcoa <- envfit(nmds.used ~ treatment+bw+fecesG,mdat, na.rm=TRUE, perm = 999)
 
 The `envfit` output is not formatted for ggplot, so we will have to do that ourselves
 
-```{r envfit-format-a,eval=TRUE}
+```{r,eval=TRUE}
 # Extract nmds arrows
 arrow.nmds <- data.frame(fit.nmds$vectors$arrows)
 colnames(arrow.nmds) <- c("xend","yend")
@@ -514,7 +527,7 @@ ord.tab.2 <- full_join(ord.tab,center.dat)
 
 With the variables fitted to the ordination, we can now create the plot
 
-```{r envfit-plot-a, eval=TRUE}
+```{r, eval=TRUE}
 
 # Create NMDS plot
 plot.nmds <- ggplot(ord.tab.2[ord.tab.2$ordination == "nmds",], aes_string(x = "Axis.1", y = "Axis.2", color = VAR)) +
