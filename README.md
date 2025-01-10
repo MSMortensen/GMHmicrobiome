@@ -114,6 +114,9 @@ The package contains the following functions:
 if (!requireNamespace("remotes")) install.packages("remotes")
 if (!requireNamespace("BiocManager")) install.packages("BiocManager")
 
+BiocManager::install(version = "3.20")
+BiocManager::install("phyloseq")
+
 remotes::install_github("MSMortensen/GMHmicrobiome")
 ```
 

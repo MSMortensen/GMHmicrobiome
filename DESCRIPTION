@@ -30,6 +30,7 @@ Imports:
     rmdformats,
     shiny,
     skimr,
+    ecole,
     vegan
 Remotes:
     Russel88/DAtest,
