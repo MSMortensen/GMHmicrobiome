@@ -18,13 +18,14 @@ knit: (function(inputFile, encoding) {
 
 # INFO {.tabset .tabset-fade .tabset-pills}
 
-This template is build to use the output from **GMH_import** as input. It will take you through a basic test of differential abundance for the project.
+This template is build to use the output from **GMH_description** as feature abundance input and the output from "gmh_test_variables" as metadata input. It will take you through a basic test of differential abundance for the project.
 
 ## BACKGROUND
 
 Differential abundance analysis aims to find the differences in the abundance of each taxa between two classes of subjects or samples, assigning a significance value to each comparison. Several bioinformatic methods have been specifically developed, taking into account the challenges of microbiome data, such as sparsity, the different sequencing depth constraint between samples and compositionality. A myriad of statistical methods exists for conducting these analyses, but it can be difficult to find the appropriate method to use. The optimal test to use depends on your sequencing data and the structure of the metadata (paired/independent samples, number of groups, covariates, normalization, etc.).
 
-The DAtest package ([Russel *et al.* 2018](https://doi.org/10.1101/241802)) can help to choose an appropriate method. It determines the false discovery rate and the true positive rate of all methods that is suitable for the variable(s) tested. This minimizes the risk of false positives.
+"MaAslin3 package is the next generation of MaAsLin (Microbiome Multivariable Associations with Linear Models). This comprehensive R package efficiently determines multivariable associations between clinical metadata and microbial meta-omics features. Relative to MaAsLin 2, MaAsLin 3 introduces the ability to quantify and test for both abundance and prevalence associations while accounting for compositionality. By incorporating generalized linear models, MaAsLin 3 accomodates most modern epidemiological study designs including cross-sectional and longitudinal studies."
+
 
 The workflow in this template goes through the following steps:
 
@@ -36,42 +37,176 @@ The workflow in this template goes through the following steps:
 
 4\. Visualize the output in a plot.
 
-This template leans heavily on the work presented in [Russel *et al.* 2018](https://doi.org/10.1101/241802).
+This template leans heavily on the work presented in [Nickols *et al.* 2024](https://doi.org/10.1101/2024.12.13.628459).
 
-### DAtest
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
 
-DAtest is a package for comparing different differential abundance methods used in microbial marker-gene (e.g. 16S rRNA), RNA-seq and protein/metabolite abundance analysis.
+if (!require("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
 
-There are many methods for testing differential abundance and no gold standard, but results can vary a lot between the different statistical methods. This package aims at aiding the analyst in choosing a method for a specific dataset based on empirical testing.
+BiocManager::install("biobakery/maaslin3")
 
-The method goes as follows:
+library(masslin3)
+library(GMHmicrobiome)
+library(ggpubr)
+library(kableExtra)
+library(phyloseq)
 
-1.  Shuffle predictor variable (E.g. case vs. control)
+# clear the environment and release memory
+rm(list = ls(all.names = TRUE))
+invisible(gc())
 
-2.  Spike in data for some randomly chosen features (OTU/ASV/gene/protein/metabolite), such that they are associated with the shuffled predictor
+```
 
-3.  Apply methods, and check:
 
-    -   whether they can find the spike-ins
+# MaAslin3 test
 
-    -   whether the false discovery rate is controlled
+MaAsLin 3 is the next generation of MaAsLin (Microbiome Multivariable Associations with Linear Models). This comprehensive R package efficiently determines multivariable associations between clinical metadata and microbial meta-omics features. Relative to MaAsLin 2, MaAsLin 3 introduces the ability to quantify and test for both abundance and prevalence associations while accounting for compositionality. By incorporating generalized linear models, MaAsLin 3 accomodates most modern epidemiological study designs including cross-sectional and longitudinal studies.
 
-#### ASSUMPTIONS
+MaAsLin3 can be run from the command line or as an R function. Both methods require the same arguments, have the same options, and use the same default settings. To run MaAsLin 3, the user must supply a table of per-sample feature abundances (with zeros still included), a table of per-sample metadata, and a model specifying how the metadata should relate to the feature prevalence (how likely the feature is to be present or absent) and abundance (how much of the feature is there if it's there). MaAsLin 3 will return a table of associations including an effect size and p-value for each feature-metadatum association and a folder of visuals including a summary plot and diagnostic plots for significant associations.
 
-The method assumes that most features are NOT associated with the predictor. It is therefore advised to first run an ordination (PCA/PCoA), PERMANOVA or similar and if there is clear separation associated with the predictor, DAtest should not be used to choose a method. In this case, only the False Positive Rate (FPR) can be trusted, and it can be used to filter methods with a high FPR.
-
-# \<VARIABLE\> - \<SUBSET\> - \<TAXONOMIC LEVEL\>
+## \<VARIABLE\> - \<SUBSET\> - \<TAXONOMIC LEVEL\>
 
 To perform a differential abundance test for multiple variables, subsets, and/or taxonomic ranks, please create copies of this section and name clearly.
 
-> As an example in this template I will perform a nested test of pfos and van, at day 8 (d8), and at genus level.
+> As an example in this template I will perform a test between groups, at 07_11, and at genus level.
 
-# DATA PREPARATION
+### Input PREPARATION
 
-When testing for differential abundance, each taxa is tested individually and all p-values are then corrected for multiple testing. This means that the more taxa tested, the higher the risk of false negatives. To avoid this, we can remove taxa that are irrelevant. This can be done based on prevalence (presence/absence), abundance, rank, or variation.  
+MaAsLin3 requires two input files.
 
-# IDENTIFY TEST
+Feature abundance data frame:
+1. Formatted with features as columns and samples as rows.
+2. The transpose of this format is also okay.
+3. Possible features include taxonomy or genes. These can be relative abundances or counts. However, here I used absolute abundance calculated based on relative abundances from 16s rRNA sequencing and total bacteria load results from qPCR.
+4. This can be a filepath to a tab-delimited file.
+Metadata data frame
+1. Formatted with variables as columns and samples as rows.
+2. The transpose of this format is also okay.
+3. Possible metadata include gender or age.
+4. This can be a filepath to a tab-delimited file.
 
-# RUN TEST
+The data file can contain samples not included in the metadata file (along with the reverse case). For both cases, those samples not included in both files will be removed from the analysis. Also, the samples do not need to be in the same order in the two files.
 
-# VISUALIZATION
+#### feature abundance data preparation
+Absolute abundance calculated based on relative abundances from 16s rRNA sequencing and total bacteria load results from qPCR
+
+```{r feature abundance, include=FALSE}
+# Load phyloseq metadata from gmh_description of genus level
+load("R_objects/Agglomerated.RData")
+
+# Subset data
+
+phy.ge <- subset_samples(phy.ge, date == "07_11")
+
+# Read abundance table
+
+otu_table <- data.frame(phy.ge@otu_table)
+
+# Convert to relative abundance
+
+otu_relative <- sweep(otu_table, 1, rowSums(otu_table), FUN="/")
+glimpse(otu_relative)
+
+# load total bacteria load from qPCR
+qpcr_counts <- read.csv("input/total_bacteria.csv",header = TRUE)
+# Filter rows where SampleID contains "07_11"
+qpcr_07_11 <- qpcr_counts %>% filter(grepl("07_11", SampleID))
+
+# normalize relative abundance by qPCR total bacterial load
+## The number of qpcr values should exactly match the number of columns in otu_relative, so transfer otu_relative to make column names into sampleID
+normalized_otu <- as.data.frame(sweep(t(otu_relative), 2, qpcr, "*"))
+glimpse(normalized_otu)
+colsum <- colSums(normalized_otu,na.rm = TRUE)
+print(colsum) # matched with qpcr_07_11 table
+
+#transfer the data to samples as row for MaAslin3 test
+normalized_otu <- t(normalized_otu)
+
+```
+
+#### Metadata data frame preparation
+
+```{r metadata, include=FALSE}
+# load data of metadata, the output of gmh_test_variables
+load("R_objects/stat_test_data.RData")
+
+# extract data on 07_11 from dat or dat_tt
+dat_07 <- dat_tt[dat_tt$date.x %in% "07_11",]
+
+metadata <- data.frame(dat_07)
+
+# If categorical variables are included as fixed effects, each level will be tested against the first factor level.  In addition, ordered predictors, group predictors, and strata variables can be included by including group(variable_name), ordered(variable_name), and strata(variable_name) respectively in the formula. Ordered and group predictors should stand alone in the formula (i.e., no group predictors in random effects). Only one strata variable can be included.
+# Factor the categorical variables to test group 1,3,4 against group 1
+
+metadata$group <- 
+  factor(metadata$group, levels = c('2', '1','3','4'))
+
+# check the correlation of your variables, if they are highly associtaed, you can't put them in the same formula for maaslin3()
+# Variable Types	                      Test to Use
+# Numerical vs. Numerical	              cor() (Pearson, Spearman)
+# Categorical (2 levels) vs. Numerical	Point-Biserial (cor.test())
+# Categorical (3+ levels) vs. Numerical	ANOVA (aov()) or Kruskal-Wallis (kruskal.test())
+# Categorical vs. Categorical	          Chi-Square (chisq.test()) or Cramér’s V (assocstats())
+
+
+## In this example for categorical variable (3+ levels) and numerical variable use ANOVA (or Kruskal-Wallis for non-normal data)
+
+kruskal.test(TT ~ group, data = metadata) # p-value = 0.0006085, correlated
+
+```
+
+### Run MaAslin3
+To run MaAsLin 3, it is also necessary to specify a model. The model can come from a formula or vectors of terms. In either case, variable names should not have spaces or unusual characters.
+
+The input_data abundances have already been scaled to be absolute abundances, the user should set normalization = NONE and median_comparison_abundance = FALSE and not include anything for unscaled_abundance. Then, the absolute abundances will be log transformed, and models will be fit on those values directly.Instead you can use relative abundance and counts and select a normalization method to run this test. Please find other setting tips for formular and vectors here https://github.com/biobakery/maaslin3
+
+Because MaAsLin 3 identifies prevalence (presence/absence) associations, sample read depth (number of reads) should be included as a covariate if available. Deeper sequencing will likely increase feature detection in a way that could spuriously correlate with metadata of interest when read depth is not included in the model.
+
+```{r masslin3, include=FALSE}
+
+set.seed(1)
+fit_out <- maaslin3(input_data = normalized_otu,
+                    input_metadata = metadata,
+                    output = "output/maaslin_group_absolute",
+                    formula = '~ group + reads',
+                    normalization = 'NONE',
+                    transform = 'LOG',
+                    augment = TRUE,
+                    standardize = TRUE,
+                    max_significance = 0.1,
+                    median_comparison_abundance = FALSE,
+                    median_comparison_prevalence = FALSE,
+                    max_pngs = 250)
+
+```
+
+### Output from MaAslin3
+
+MaAsLin 3 generates two types of output files explained below: data and visualizations. In addition, the object returned from maaslin3 contains all the data and results (see ?maaslin_fit).
+
+1. Data output files
+
+1.1 all_results.tsv
+significant_results.tsv: This file is a subset of the results in the first file, and only includes associations with joint or individual q-values less than or equal to the threshold.
+1.2 features : This folder includes the filtered, normalized, and transformed versions of the input feature table.
+1.3 models_linear.rds and models_logistic.rds
+1.4 residuals_linear.rds and residuals_logstic.rds
+1.5 fitted_linear.rds and fitted_logistic.rds
+1.6 ranef_linear.rds and ranef_logistic.rds
+1.7 maaslin3.log
+
+2. Visualization output files
+
+2.1 summary_plot.pdf
+This file contain a combined coefficient plot and heatmap of the most significant associations. In the heatmap, one star indicates the individual q-value is below the parameter max_significance, and two stars indicate the individual q-value is below max_significance divided by 10.
+
+2.2 association_plots/[metadatum]/[association]/ [metadatum]_[feature]_[association].png
+A plot is generated for each significant association up to max_pngs.
+Scatter plots are used for continuous metadata abundance associations.
+Box plots are used for categorical data abundance associations.
+Box plots are used for continuous data prevalence associations.
+Grids are used for categorical data prevalence associations.
+Data points plotted are after filtering, normalization, and transformation so that the scale in the plot is the scale that was used in fitting.
+
