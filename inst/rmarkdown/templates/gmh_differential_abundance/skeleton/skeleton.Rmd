@@ -29,13 +29,11 @@ Differential abundance analysis aims to find the differences in the abundance of
 
 The workflow in this template goes through the following steps:
 
-1\. Data preparation and prefiltering.
+1\. Input preparation.
 
-2\. Identify suitable statistical test.
+2\. Perform MaAslin3 test.
 
-3\. Perform the statistical test.
-
-4\. Visualize the output in a plot.
+3\. Output introductions.
 
 This template leans heavily on the work presented in [Nickols *et al.* 2024](https://doi.org/10.1101/2024.12.13.628459).
 
