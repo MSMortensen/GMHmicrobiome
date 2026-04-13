@@ -45,7 +45,7 @@ if (!require("BiocManager", quietly = TRUE))
 
 BiocManager::install("biobakery/maaslin3")
 
-library(masslin3)
+library(maaslin3)
 library(GMHmicrobiome)
 library(ggpubr)
 library(kableExtra)
