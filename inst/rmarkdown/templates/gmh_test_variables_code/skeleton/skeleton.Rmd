@@ -987,11 +987,13 @@ pwc
 ```
 
 ##### NON PARAMETRIC ALTERNATIVE
+
 The **Friedman test** is a non-parametric alternative to the one-way repeated measures ANOVA test. It extends the Sign test in the situation where there are more than two groups to compare.
 
 Friedman test is used to assess whether there are any statistically significant differences between the distributions of three or more paired groups. It’s recommended when the normality assumptions of the one-way repeated measures ANOVA test is not met or when the dependent variable is measured on an ordinal scale.
 
 **Compute Friedman test**\
+
 ```{r}
 # Create formula
 FORMULA <- as.formula(paste(OUTCOME, "~", TIME,"|",SUBJECT, sep = " "))
@@ -1273,6 +1275,7 @@ FORMULA <- as.formula(paste(OUTCOME,PREDICTOR.F, sep = " ~ "))
 # Summary samples in groups
 dat.clean %>% group_by(across(all_of(PREDICTOR))) %>% get_summary_stats(!!sym(OUTCOME), type = "mean_sd")
 ```
+
 ```{r test-comparison-manova}
 # run test
 res.man <- manova(cbind(PFOS_serum8_ug,bw, PFOS_liver_mg, propanoic, liver_w, cecum_w, Observed) ~ pfos + van, data = dat.used)

@@ -1,7 +1,7 @@
 Package: GMHmicrobiome
 Type: Package
 Title: Functions to support microbiome data analysis
-Version: 0.1.0
+Version: 0.1.1
 Author: person("Martin","Mortensen", "martin@mortensen.one", role = c("aut","cre"))
 Description: This package contains functions to support analyses of 
     sequencing data, this includes taxa cleaning and filtering, alpha 
@@ -14,14 +14,14 @@ Depends:
     tidyverse
 biocViews: Microbiome
 Imports:
-    DAtest,
     cowplot (>= 1.0.0),
     decontam,
     markdown,
-    ggpubr,
     ggExtra,
+    ggpubr,
     ggsci,
     kableExtra,
+    maaslin3,
     pals,
     phangorn,
     picante,
@@ -32,8 +32,8 @@ Imports:
     skimr,
     vegan
 Remotes:
-    Russel88/DAtest,
     daattali/ggExtra,
-    phytomosaic/ecole
+#    phytomosaic/ecole,
+    biobakery/maaslin3
 RoxygenNote: 7.3.2
 BugReports: https://github.com/MSMortensen/GMHmicrobiome/issues

@@ -20,7 +20,7 @@ knit: (function(inputFile, encoding) {
 
 ## BACKGROUND
 
-This template is build to use the output from **GMH_import** as input. It consists of four sections; **Description** of your project and variables, **Import** and formatting of your data, **Section for inserting statistical test**, **Summary** of the R environment and packages used. 
+This template is build to use the output from **GMH_import** as input. It consists of four sections; **Description** of your project and variables, **Import** and formatting of your data, **Section for inserting statistical test**, **Summary** of the R environment and packages used.
 
 For each subset, variable, or combination of variables, create a new section in the TEST section, subset data as needed and insert the appropriate code from the `GMH_test_variables_code` template.
 
@@ -174,8 +174,7 @@ invisible(gc())
 
 # TEST INDEPENDENCE
 
-It is important to confirm if our variablse are independent of each other. If any are significantly correlated this will affect how the variables should be used in following tests. For example, Observed richness and FaithPD are generally correlated, so we should not include both as outcome in a manova test or maybe only one should be tested.
-It might also be considered to perform an ANCOVA test where we correct for the influence of the correlated variable.
+It is important to confirm if our variablse are independent of each other. If any are significantly correlated this will affect how the variables should be used in following tests. For example, Observed richness and FaithPD are generally correlated, so we should not include both as outcome in a manova test or maybe only one should be tested. It might also be considered to perform an ANCOVA test where we correct for the influence of the correlated variable.
 
 ## CATEGORICAL VARIABLES
 
@@ -261,7 +260,6 @@ invisible(gc())
 
 ```
 
-
 # <SUBSET> - <PREDICTOR> - <OUTCOME>
 
 For each combination of subset, predictor, and outcome please create a new section so that all performed tests are preserved in this script. When preparing the script for publication all unused tests should be moved to a section with supplementary tests in the end of the Rmarkdown.
@@ -295,8 +293,7 @@ To prepare for the test we have to set the relevant variables
 
 > INSERT RELEVANT CODE TO CREATE RELEVANT PLOT
 
-#  NEXT <SUBSET> - <PREDICTOR> - <OUTCOME>
-
+# NEXT <SUBSET> - <PREDICTOR> - <OUTCOME>
 
 # INFO {.tabset .tabset-fade .tabset-pills}
 
@@ -306,15 +303,11 @@ This completes the fundamental statistical test of the sample variables.
 
 If not yet finished, continue with the following steps:
 
-+------------------------+----------------------------+-----------------------------------------------------------------+
-| Analysis               | Template                   | Note                                                            |
-+========================+============================+=================================================================+
-| Microbiome description | GMH_description            | Compositional statistics and plots                              |
-+------------------------+----------------------------+-----------------------------------------------------------------+
-| Beta diversity         | GMH_beta_diveristy         | Statistical test and visualization of beta diversity            |
-+------------------------+----------------------------+-----------------------------------------------------------------+
-| Differential abundance | GMH_differential_abundance | Test differential abundance of taxa against sample variables    |
-+------------------------+----------------------------+-----------------------------------------------------------------+
+| Analysis | Template | Note |
+|----|----|----|
+| Microbiome description | GMH_description | Compositional statistics and plots |
+| Beta diversity | GMH_beta_diveristy | Statistical test and visualization of beta diversity |
+| Differential abundance | GMH_differential_abundance | Test differential abundance of taxa against sample variables |
 
 ## SESSION INFO
 

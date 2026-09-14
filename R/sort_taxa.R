@@ -8,7 +8,7 @@
 
 sort_taxa <- function(dat) {
   # set columns
-  tax.levels <- c("Kingdom", "Phylum", "Class","Order","Family","Genus","Species", "Taxa")
+  tax.levels <- c("Kingdom", "Phylum", "Class","Order","Family","Genus","Species", "Taxa","kingdom", "phylum", "class","order","family","genus","species", "taxa")
   tax.use <- tax.levels[tax.levels %in% colnames(dat)]
 
   # Sort data

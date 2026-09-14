@@ -40,7 +40,7 @@ finalised, but this will be updated when they are added.
   the samples. This does not include any statistical analysis.  
   *Output*: A structured .html document with all tables and plots.
 
-- **GMH_test_variables** (Lacks visualization part)  
+- **GMH_test_variables** 
   *Input*: One phyloseq objects from **GMH_import** or a general data
   file.  
   *Description*: Organise data and structure analyses of predictor and
@@ -49,7 +49,7 @@ finalised, but this will be updated when they are added.
   *Output*: Relevant plots and a structured .html document showing the
   statistical analyses.
 
-- **GMH_test_variables_code** (Lacks visualization part)  
+- **GMH_test_variables_code**   
   *Input*: None  
   *Description*: Guide to identify and apply the correct statistical
   test differences and correlations between predictor variables
@@ -68,9 +68,8 @@ finalised, but this will be updated when they are added.
   template)  
   *Input*: One phyloseq objects from **GMH_import.**  
   *Description*: Identification of differentially expressed taxa. This
-  is structured around the DAtest package and supplemented with plots.  
-  *Output*: Relevant plots and a structured .html document showing the
-  differential abundance analysis.
+  is structured around Maaslin3.  
+  *Output*: standard maaslin3 output files.
 
 ### Functions
 
@@ -114,19 +113,10 @@ The package contains the following functions:
 if (!requireNamespace("remotes")) install.packages("remotes")
 if (!requireNamespace("BiocManager")) install.packages("BiocManager")
 
-BiocManager::install(version = "3.20")
+BiocManager::install(version = "3.23")
 BiocManager::install("phyloseq")
 
 remotes::install_github("MSMortensen/GMHmicrobiome")
-```
-
-For full functionality of the DAtest package also install the following packages
-
-```r
-BiocManager::install(c("DESeq2","limma","edgeR","metagenomeSeq","baySeq","ALDEx2","impute","ANCOMBC"))
-
-install.packages(c("samr","pscl","statmod","mvabund","eulerr","lsmeans"))
-
 ```
 
 ## How to use
